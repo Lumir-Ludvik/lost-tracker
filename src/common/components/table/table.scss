@@ -1,0 +1,19 @@
+.custom-table {
+  thead {
+    background-color: darkred;
+  }
+
+  tbody {
+    td:first-child {
+      background-color: darkred;
+    }
+  }
+}
+
+.checked {
+  background-color: green;
+}
+
+.un-checked {
+  background-color: dodgerblue;
+}
