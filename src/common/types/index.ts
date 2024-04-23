@@ -1,24 +1,24 @@
 export type RowDataType = {
-    name: string,
-    statuses: boolean[]
-}
+  name: string;
+  statuses: boolean[];
+};
 
 export type TableDataType = {
-    rows: RowDataType[],
-    columns: string[]
-}
+  rows: RowDataType[];
+  columns: string[];
+};
 
 export enum Days {
-    Sunday,
-    Monday,
-    Tuesday,
-    Wednesday,
-    Thursday,
-    Friday,
-    Saturday
+  Sunday,
+  Monday,
+  Tuesday,
+  Wednesday,
+  Thursday,
+  Friday,
+  Saturday
 }
 
 export type TimeTableType = {
-    tableKey: string;
-    dayOfReset: Days | "always";
-}
+  tableKey: string;
+  dayOfReset: Days | "always";
+};

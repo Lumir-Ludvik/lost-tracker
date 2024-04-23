@@ -1,13 +1,12 @@
-import './App.css'
-import {TableView} from "./pages/table-view/table-view.tsx";
+import "./App.css";
+import { TableView } from "./pages/table-view/table-view.tsx";
 
 function App() {
-
-    return (
-        <>
-            <TableView/>
-        </>
-    )
+  return (
+    <>
+      <TableView />
+    </>
+  );
 }
 
-export default App
+export default App;
