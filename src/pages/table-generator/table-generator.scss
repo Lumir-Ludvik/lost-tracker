@@ -1,0 +1,41 @@
+.table-generator {
+  fieldset {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .fieldset-element-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    label {
+      margin-right: 1rem;
+    }
+
+    input {
+      margin-bottom: 1rem;
+    }
+  }
+
+  .color-picker-display {
+    width: 36px;
+    height: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: white;
+  }
+
+  .color-picker-container {
+    position: absolute;
+    z-index: 2;
+
+    .color-picker-close-div {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+  }
+}

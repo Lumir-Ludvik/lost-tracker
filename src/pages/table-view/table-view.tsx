@@ -9,6 +9,7 @@ import {
 import { Days } from "../../common/types";
 import { useResetTable } from "../../hooks/useResetTable.tsx";
 import { useState } from "react";
+import "./table-view.scss";
 
 export const TableView = () => {
   const [charTable, setCharTable] = useState(characterTableDefault);

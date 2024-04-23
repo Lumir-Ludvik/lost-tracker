@@ -1,4 +1,6 @@
 .custom-table {
+  margin: 1rem;
+
   thead {
     background-color: darkred;
   }
@@ -6,6 +8,11 @@
   tbody {
     td:first-child {
       background-color: darkred;
+      text-align: start;
+    }
+
+    td {
+      text-align: center;
     }
   }
 }
