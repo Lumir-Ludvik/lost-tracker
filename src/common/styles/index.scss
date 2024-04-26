@@ -1,0 +1,20 @@
+.link {
+  font-size: large;
+  color: #c5962e;
+}
+
+.link:hover {
+  color: #8f6e20;
+}
+
+.invalid {
+  input,
+  select {
+    border: red 2px solid;
+  }
+
+  p {
+    margin-top: 0;
+    color: red;
+  }
+}

@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { TableDataType, TimeTableType } from "../../types";
+import { TableDataType } from "../../types";
 import "./table.scss";
 import { useLocalStorage } from "../../../hooks/useLocalStorage.tsx";
 import { useResetTable } from "../../../hooks/useResetTable.tsx";
 
 type TableProps = {
-  name: string;
   data: TableDataType;
-  timeTable: TimeTableType;
 };
 
-export const Table = ({ name, data, timeTable }: TableProps) => {
-  const { saveToStorage, getFromStorage } = useLocalStorage();
+export const Table = ({ data }: TableProps) => {
+  const { saveToStorage, getFromStorage, removeFromStorage } =
+    useLocalStorage();
   const { resetTable } = useResetTable();
 
   const [tableData, setTableData] = useState(data);
@@ -21,7 +20,7 @@ export const Table = ({ name, data, timeTable }: TableProps) => {
   }, [data]);
 
   const refreshAfterReset = useCallback(() => {
-    const data = getFromStorage(name);
+    const data = getFromStorage(tableData.tableName);
 
     if (!data) {
       console.error(
@@ -33,11 +32,11 @@ export const Table = ({ name, data, timeTable }: TableProps) => {
     const table = JSON.parse(data);
 
     setTableData(table);
-  }, [getFromStorage, name]);
+  }, [getFromStorage, tableData.tableName]);
 
   useEffect(() => {
-    if (timeTable.dayOfReset === "always") {
-      const ret = resetTable(name);
+    if (tableData.timeOfReset === "always") {
+      const ret = resetTable(tableData.tableName);
       if (ret) {
         setTableData(ret);
       }
@@ -45,21 +44,26 @@ export const Table = ({ name, data, timeTable }: TableProps) => {
 
     const today = new Date().getDay();
 
-    if (today === timeTable.dayOfReset) {
-      const ret = resetTable(name);
+    if (today === tableData.timeOfReset) {
+      const ret = resetTable(tableData.tableName);
       if (ret) {
         setTableData(ret);
       }
     }
-  }, [name, refreshAfterReset, resetTable, timeTable]);
+  }, [
+    tableData.tableName,
+    refreshAfterReset,
+    resetTable,
+    tableData.timeOfReset
+  ]);
 
   useEffect(() => {
-    const data = getFromStorage(name);
+    const data = getFromStorage(tableData.tableName);
 
     if (data) {
       setTableData(JSON.parse(data));
     }
-  }, [getFromStorage, name]);
+  }, [getFromStorage, tableData.tableName]);
 
   const onCheckboxChange = useCallback(
     (rowIndex: number, statusIndex: number, change: boolean) => {
@@ -67,15 +71,22 @@ export const Table = ({ name, data, timeTable }: TableProps) => {
       nextData.rows[rowIndex].statuses[statusIndex] = change;
 
       setTableData(nextData);
-      saveToStorage(name, nextData);
+      saveToStorage(tableData.tableName, nextData);
     },
-    [tableData, saveToStorage, name]
+    [tableData, saveToStorage]
   );
 
   const generateColumns = useMemo(
     () =>
       tableData.columns.map((column, columnIndex) => (
-        <th key={`column-${columnIndex}`}>{column}</th>
+        <th
+          key={`column-${columnIndex}`}
+          style={{
+            backgroundColor: column.color
+          }}
+        >
+          {column.name}
+        </th>
       )),
     [tableData.columns]
   );
@@ -83,7 +94,7 @@ export const Table = ({ name, data, timeTable }: TableProps) => {
   const generateRows = useMemo(() => {
     return tableData.rows.map((row, rowIndex) => (
       <tr key={`row-${rowIndex}`}>
-        <td>{row.name}</td>
+        <td style={{ backgroundColor: row.color }}>{row.name}</td>
         {row.statuses.map((status, statusIndex) => (
           <td
             key={`chkbox-${statusIndex}`}
@@ -103,14 +114,23 @@ export const Table = ({ name, data, timeTable }: TableProps) => {
   }, [tableData.rows, onCheckboxChange]);
 
   return (
-    <table className="custom-table">
-      <thead>
-        <tr>
-          <th>{name}</th>
-          {generateColumns}
-        </tr>
-      </thead>
-      <tbody>{generateRows}</tbody>
-    </table>
+    <div className="custom-table-container">
+      <table className="custom-table">
+        <thead>
+          <tr>
+            <th>{tableData.tableName}</th>
+            {generateColumns}
+          </tr>
+        </thead>
+        <tbody>{generateRows}</tbody>
+      </table>
+
+      <div className="actions">
+        <button onClick={() => removeFromStorage(tableData.tableName)}>
+          Delete
+        </button>
+        <button onClick={() => resetTable(tableData.tableName)}>Reset</button>
+      </div>
+    </div>
   );
 };

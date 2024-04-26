@@ -20,10 +20,17 @@ export const useLocalStorage = () => {
 
   const clearStorage = useCallback(() => window.localStorage.clear(), []);
 
+  const getAll = useCallback(() => {
+    const all = { ...window.localStorage };
+
+    return Object.keys(all).map(key => JSON.parse(all[key]));
+  }, []);
+
   return {
     saveToStorage,
     getFromStorage,
     removeFromStorage,
-    clearStorage
+    clearStorage,
+    getAll
   };
 };

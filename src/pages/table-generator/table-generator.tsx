@@ -2,28 +2,23 @@ import { ChangeEvent, useCallback } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import "./table-generator.scss";
 import { Input } from "../../common/components/input/input.tsx";
-import { SketchPicker } from "react-color";
-
-type ElementType = {
-  value: string;
-  color?: string;
-  displayColorPicker: boolean;
-};
-
-type TableForm = {
-  tableName: string;
-  columns: ElementType[];
-  rows: ElementType[];
-};
+import { ColorPicker } from "../../common/components/color-picker/color-picker.tsx";
+import { Select } from "../../common/components/select/select.tsx";
+import { useLocalStorage } from "../../hooks/useLocalStorage.tsx";
+import { mapFormDataToTableDataType } from "./table-generator-mapper.ts";
+import { TableForm } from "./types.ts";
 
 export const TableGenerator = () => {
-  const { control, handleSubmit } = useForm<TableForm>({
+  const { saveToStorage } = useLocalStorage();
+
+  const { control, handleSubmit, reset } = useForm<TableForm>({
     defaultValues: {
       tableName: "",
-      columns: [{ value: "", color: "", displayColorPicker: false }],
-      rows: [{ value: "", color: "", displayColorPicker: false }]
+      columns: [{ value: "", color: "#ffffff", displayColorPicker: false }],
+      rows: [{ value: "", color: "#ffffff", displayColorPicker: false }]
     }
   });
+
   const {
     update: columnUpdate,
     fields: columnFields,
@@ -44,9 +39,13 @@ export const TableGenerator = () => {
     name: "rows"
   });
 
-  const createTable = useCallback(data => {
-    debugger;
-  }, []);
+  const createTable = useCallback(
+    (data: TableForm) => {
+      saveToStorage(data.tableName, mapFormDataToTableDataType(data));
+      reset();
+    },
+    [reset, saveToStorage]
+  );
 
   const handleInputChange = useCallback(
     (
@@ -56,7 +55,7 @@ export const TableGenerator = () => {
       onChange: (...event: unknown[]) => void
     ) => {
       const value = (event.target as HTMLInputElement).value;
-
+      // TODO: bug when pressing space in an empty newly generated input
       if (!isLast && value.trim()) {
         onChange(event);
         return;
@@ -92,7 +91,20 @@ export const TableGenerator = () => {
               required: { value: true, message: "This field is required" }
             }}
             render={({ field, fieldState: { error } }) => (
-              <Input field={field} error={error} value={field.value.trim()} />
+              <Input field={field} error={error} value={field.value} />
+            )}
+          />
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <div>
+          <label>Day of reset:</label>
+          <Controller
+            name="timeOfReset"
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <Select field={field} error={error} />
             )}
           />
         </div>
@@ -114,7 +126,7 @@ export const TableGenerator = () => {
                   <Input
                     field={field}
                     error={error}
-                    value={field.value.value?.trim()}
+                    value={field.value.value}
                     onChange={event => {
                       handleInputChange(
                         event,
@@ -123,10 +135,21 @@ export const TableGenerator = () => {
                         field.onChange
                       );
                     }}
+                    onBlur={event => {
+                      // TODO: dumb hack. Implement proper solution
+                      columnUpdate(columnIndex, {
+                        ...field.value,
+                        value: (event.target as HTMLInputElement).value
+                      });
+                      field.onBlur();
+                    }}
                   />
                   <div
                     className="color-picker-display"
-                    style={{ backgroundColor: field.value.color }}
+                    style={{
+                      backgroundColor:
+                        field.value.color?.toString() ?? "#ffffff"
+                    }}
                     onClick={() =>
                       columnUpdate(columnIndex, {
                         ...field.value,
@@ -135,26 +158,16 @@ export const TableGenerator = () => {
                     }
                   />
                   {field.value.displayColorPicker && (
-                    <div className="color-picker-container">
-                      <div
-                        className="color-picker-close-div"
-                        onClick={() =>
-                          columnUpdate(columnIndex, {
-                            ...field.value,
-                            displayColorPicker: false
-                          })
-                        }
-                      />
-                      <SketchPicker
-                        color={field.value.color}
-                        onChange={color =>
-                          columnUpdate(columnIndex, {
-                            ...field.value,
-                            color: color.hex
-                          })
-                        }
-                      />
-                    </div>
+                    <ColorPicker
+                      color={field.value.color}
+                      onClose={color =>
+                        columnUpdate(columnIndex, {
+                          ...field.value,
+                          displayColorPicker: false,
+                          color: color
+                        })
+                      }
+                    />
                   )}
                 </>
               )}
@@ -179,7 +192,7 @@ export const TableGenerator = () => {
                   <Input
                     field={field}
                     error={error}
-                    value={field.value.value?.trim()}
+                    value={field.value.value}
                     onChange={event => {
                       handleInputChange(
                         event,
@@ -188,38 +201,39 @@ export const TableGenerator = () => {
                         field.onChange
                       );
                     }}
+                    onBlur={event => {
+                      // TODO: dumb hack. Implement proper solution
+                      rowUpdate(rowIndex, {
+                        ...field.value,
+                        value: (event.target as HTMLInputElement).value
+                      });
+                      field.onBlur();
+                    }}
                   />
                   <div
                     className="color-picker-display"
-                    style={{ backgroundColor: field.value.color }}
-                    onClick={() =>
+                    style={{
+                      backgroundColor: field.value.color?.toString()
+                    }}
+                    onClick={() => {
+                      console.log("UFO", field.value.value);
                       rowUpdate(rowIndex, {
                         ...field.value,
                         displayColorPicker: true
-                      })
-                    }
+                      });
+                    }}
                   />
                   {field.value.displayColorPicker && (
-                    <div className="color-picker-container">
-                      <div
-                        className="color-picker-close-div"
-                        onClick={() =>
-                          rowUpdate(rowIndex, {
-                            ...field.value,
-                            displayColorPicker: false
-                          })
-                        }
-                      />
-                      <SketchPicker
-                        color={field.value.color}
-                        onChange={color =>
-                          rowUpdate(rowIndex, {
-                            ...field.value,
-                            color: color.hex
-                          })
-                        }
-                      />
-                    </div>
+                    <ColorPicker
+                      color={field.value.color}
+                      onClose={color => {
+                        rowUpdate(rowIndex, {
+                          ...field.value,
+                          displayColorPicker: false,
+                          color
+                        });
+                      }}
+                    />
                   )}
                 </>
               )}

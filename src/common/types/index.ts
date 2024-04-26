@@ -1,12 +1,31 @@
 export type RowDataType = {
   name: string;
   statuses: boolean[];
+  color?: string;
+};
+
+export type ColumnDataType = {
+  name: string;
+  color?: string;
 };
 
 export type TableDataType = {
+  tableName: string;
+  timeOfReset: Days | "always";
   rows: RowDataType[];
-  columns: string[];
+  columns: ColumnDataType[];
 };
+
+export const DaysSort = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday"
+] as const;
+export type DaysSortType = (typeof DaysSort)[number];
 
 export enum Days {
   Sunday,

@@ -1,19 +1,30 @@
-.custom-table {
-  margin: 1rem;
+.custom-table-container {
+  display: flex;
 
-  thead {
-    background-color: darkred;
+  .custom-table {
+    margin: 1rem;
+
+    thead {
+      background-color: darkred;
+    }
+
+    tbody {
+      td:first-child {
+        background-color: darkred;
+        text-align: start;
+      }
+
+      td {
+        text-align: center;
+      }
+    }
   }
 
-  tbody {
-    td:first-child {
-      background-color: darkred;
-      text-align: start;
-    }
-
-    td {
-      text-align: center;
-    }
+  .actions {
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 }
 
