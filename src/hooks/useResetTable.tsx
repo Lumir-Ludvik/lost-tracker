@@ -1,6 +1,5 @@
 import { useLocalStorage } from "./useLocalStorage.tsx";
 import { useCallback } from "react";
-import { TableDataType } from "../common/types";
 
 export const useResetTable = () => {
   const { getFromStorage, saveToStorage } = useLocalStorage();
@@ -11,20 +10,19 @@ export const useResetTable = () => {
 
       if (!data) {
         console.error(
-          "No such table exists in localStorage. Check your table name"
+          `Table called ${name} does not exists in localStorage. Check your table name`
         );
         return;
       }
 
-      const table: TableDataType = JSON.parse(data);
-      const nextTable = { ...table };
+      const nextTable = { ...data };
 
-      nextTable.rows = table.rows.map(row => ({
+      nextTable.rows = data.rows.map(row => ({
         ...row,
         statuses: row.statuses.map(() => false)
       }));
 
-      saveToStorage(name, nextTable);
+      saveToStorage(nextTable);
       return nextTable;
     },
     [getFromStorage, saveToStorage]

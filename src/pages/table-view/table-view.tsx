@@ -1,17 +1,9 @@
-import { useEffect, useState } from "react";
 import "./table-view.scss";
-import { useLocalStorage } from "../../hooks/useLocalStorage.tsx";
-import { TableDataType } from "../../common/types";
 import { Table } from "../../common/components/table/table.tsx";
+import { useTableContext } from "../../contexts/table-context.tsx";
 
 export const TableView = () => {
-  const { getAll } = useLocalStorage();
-
-  const [tables, setTables] = useState<TableDataType[]>([]);
-
-  useEffect(() => {
-    setTables(getAll());
-  }, [getAll]);
+  const { tables } = useTableContext();
 
   //TODO: add context for table data and functions for reset and delete
   return (
@@ -19,6 +11,13 @@ export const TableView = () => {
       {tables.map((table, tableIndex) => (
         <Table key={`table-${tableIndex}`} data={table} />
       ))}
+
+      {tables.length === 0 && (
+        <div className="no-tables">
+          <h1>No tables found! 😱</h1>
+          <h2>Go ahead and create some 😈</h2>
+        </div>
+      )}
     </div>
   );
 };

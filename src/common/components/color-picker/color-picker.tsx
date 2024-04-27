@@ -3,7 +3,7 @@ import "./color-picker.scss";
 import { useCallback, useDeferredValue, useEffect, useState } from "react";
 
 type ColorPickerProps = Omit<SketchPickerProps, "onChange" | "color"> & {
-  color: string;
+  color: string | undefined;
   onClose: (color: string | undefined) => void;
 };
 

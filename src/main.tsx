@@ -4,9 +4,12 @@ import "./index.scss";
 import { RouterProvider } from "react-router-dom";
 import { Router } from "./router.tsx";
 import { GenericError } from "./pages/generic-error-page/generic-error.tsx";
+import { TableContextProvider } from "./contexts/table-context.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <RouterProvider router={Router} fallbackElement={<GenericError />} />
+    <TableContextProvider>
+      <RouterProvider router={Router} fallbackElement={<GenericError />} />
+    </TableContextProvider>
   </React.StrictMode>
 );

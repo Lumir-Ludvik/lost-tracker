@@ -4,12 +4,12 @@ import "./table-generator.scss";
 import { Input } from "../../common/components/input/input.tsx";
 import { ColorPicker } from "../../common/components/color-picker/color-picker.tsx";
 import { Select } from "../../common/components/select/select.tsx";
-import { useLocalStorage } from "../../hooks/useLocalStorage.tsx";
 import { mapFormDataToTableDataType } from "./table-generator-mapper.ts";
 import { TableForm } from "./types.ts";
+import { useTableContext } from "../../contexts/table-context.tsx";
 
 export const TableGenerator = () => {
-  const { saveToStorage } = useLocalStorage();
+  const { saveTable } = useTableContext();
 
   const { control, handleSubmit, reset } = useForm<TableForm>({
     defaultValues: {
@@ -41,10 +41,10 @@ export const TableGenerator = () => {
 
   const createTable = useCallback(
     (data: TableForm) => {
-      saveToStorage(data.tableName, mapFormDataToTableDataType(data));
+      saveTable(mapFormDataToTableDataType(data));
       reset();
     },
-    [reset, saveToStorage]
+    [reset, saveTable]
   );
 
   const handleInputChange = useCallback(

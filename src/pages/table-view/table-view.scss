@@ -1,4 +1,13 @@
 .table-view {
   display: flex;
   flex-wrap: wrap;
+  height: 100%;
+}
+
+.no-tables {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
 }
