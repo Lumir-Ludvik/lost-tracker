@@ -46,15 +46,22 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
         table => table.tableName === tableName
       );
 
-      if (indexOfTable === -1 || !nextTable) {
+      if (indexOfTable === -1 && !nextTable) {
         console.error(
           `Cannot update TableContext state. Table called ${tableName} was not found!`
         );
         return;
       }
 
-      nextState[indexOfTable] = nextTable;
-      setTables(nextState);
+      if (nextTable && indexOfTable === -1) {
+        setTables([...tables, nextTable]);
+        return;
+      }
+
+      if (indexOfTable !== -1 && nextTable) {
+        nextState[indexOfTable] = nextTable;
+        setTables(nextState);
+      }
     },
     [getFromStorage, tables]
   );

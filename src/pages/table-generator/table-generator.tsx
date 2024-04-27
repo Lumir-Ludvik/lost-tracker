@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback } from "react";
+import { ChangeEvent, useCallback, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import "./table-generator.scss";
 import { Input } from "../../common/components/input/input.tsx";
@@ -11,16 +11,19 @@ import { useTableContext } from "../../contexts/table-context.tsx";
 export const TableGenerator = () => {
   const { saveTable } = useTableContext();
 
+  const [colorPickerState, setColorPickerState] = useState<
+    Record<string, boolean>
+  >({});
+
   const { control, handleSubmit, reset } = useForm<TableForm>({
     defaultValues: {
       tableName: "",
-      columns: [{ value: "", color: "#ffffff", displayColorPicker: false }],
-      rows: [{ value: "", color: "#ffffff", displayColorPicker: false }]
+      columns: [{ value: "", color: "#ffffff" }],
+      rows: [{ value: "", color: "#ffffff" }]
     }
   });
 
   const {
-    update: columnUpdate,
     fields: columnFields,
     append: appendColumn,
     remove: removeColumn
@@ -30,7 +33,6 @@ export const TableGenerator = () => {
   });
 
   const {
-    update: rowUpdate,
     fields: rowFields,
     append: appendRow,
     remove: removeRow
@@ -64,19 +66,27 @@ export const TableGenerator = () => {
       switch (typeOfInput) {
         case "column":
           value.trim()
-            ? appendColumn({ value: "", color: "", displayColorPicker: false })
+            ? appendColumn({ value: "", color: "" })
             : removeColumn(-1);
           break;
         case "row":
-          value.trim()
-            ? appendRow({ value: "", color: "", displayColorPicker: false })
-            : removeRow(-1);
+          value.trim() ? appendRow({ value: "", color: "" }) : removeRow(-1);
           break;
       }
 
       onChange(event);
     },
     [appendColumn, appendRow, removeColumn, removeRow]
+  );
+
+  const onColorPickerButtonClick = useCallback(
+    (state: boolean, key: string) => {
+      const nextState = { ...colorPickerState };
+      nextState[key] = state;
+
+      setColorPickerState(nextState);
+    },
+    [colorPickerState]
   );
 
   return (
@@ -114,19 +124,21 @@ export const TableGenerator = () => {
         <div className="fieldset-element-container">
           <label>Columns:</label>
           {columnFields.map((column, columnIndex) => (
-            <Controller
-              key={column.id}
-              name={`columns.${columnIndex}`}
-              control={control}
-              rules={{
-                required: { value: true, message: "This field is required" }
-              }}
-              render={({ field, fieldState: { error } }) => (
-                <>
+            <div key={column.id}>
+              <Controller
+                name={`columns.${columnIndex}.value`}
+                control={control}
+                rules={{
+                  required: {
+                    value: columnIndex === 0,
+                    message: "This field is required"
+                  }
+                }}
+                render={({ field, fieldState: { error } }) => (
                   <Input
                     field={field}
                     error={error}
-                    value={field.value.value}
+                    value={field.value}
                     onChange={event => {
                       handleInputChange(
                         event,
@@ -135,43 +147,42 @@ export const TableGenerator = () => {
                         field.onChange
                       );
                     }}
-                    onBlur={event => {
-                      // TODO: dumb hack. Implement proper solution
-                      columnUpdate(columnIndex, {
-                        ...field.value,
-                        value: (event.target as HTMLInputElement).value
-                      });
-                      field.onBlur();
-                    }}
                   />
-                  <div
-                    className="color-picker-display"
-                    style={{
-                      backgroundColor:
-                        field.value.color?.toString() ?? "#ffffff"
-                    }}
-                    onClick={() =>
-                      columnUpdate(columnIndex, {
-                        ...field.value,
-                        displayColorPicker: true
-                      })
-                    }
-                  />
-                  {field.value.displayColorPicker && (
-                    <ColorPicker
-                      color={field.value.color}
-                      onClose={color =>
-                        columnUpdate(columnIndex, {
-                          ...field.value,
-                          displayColorPicker: false,
-                          color: color
-                        })
-                      }
+                )}
+              />
+              <Controller
+                name={`columns.${columnIndex}.color`}
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <div>
+                    <div
+                      className="color-picker-display"
+                      style={{
+                        backgroundColor: value?.toString() ?? "#ffffff"
+                      }}
+                      onClick={() => {
+                        onColorPickerButtonClick(
+                          true,
+                          `columns.${columnIndex}.color`
+                        );
+                      }}
                     />
-                  )}
-                </>
-              )}
-            />
+                    {colorPickerState[`columns.${columnIndex}.color`] && (
+                      <ColorPicker
+                        color={value}
+                        onClose={color => {
+                          onChange(color);
+                          onColorPickerButtonClick(
+                            false,
+                            `columns.${columnIndex}.color`
+                          );
+                        }}
+                      />
+                    )}
+                  </div>
+                )}
+              />
+            </div>
           ))}
         </div>
       </fieldset>
@@ -180,19 +191,21 @@ export const TableGenerator = () => {
         <div className="fieldset-element-container">
           <label>Rows:</label>
           {rowFields.map((row, rowIndex) => (
-            <Controller
-              key={row.id}
-              name={`rows.${rowIndex}`}
-              control={control}
-              rules={{
-                required: { value: true, message: "This field is required" }
-              }}
-              render={({ field, fieldState: { error } }) => (
-                <>
+            <div key={row.id}>
+              <Controller
+                name={`rows.${rowIndex}.value`}
+                control={control}
+                rules={{
+                  required: {
+                    value: rowIndex === 0,
+                    message: "This field is required"
+                  }
+                }}
+                render={({ field, fieldState: { error } }) => (
                   <Input
                     field={field}
                     error={error}
-                    value={field.value.value}
+                    value={field.value}
                     onChange={event => {
                       handleInputChange(
                         event,
@@ -201,43 +214,43 @@ export const TableGenerator = () => {
                         field.onChange
                       );
                     }}
-                    onBlur={event => {
-                      // TODO: dumb hack. Implement proper solution
-                      rowUpdate(rowIndex, {
-                        ...field.value,
-                        value: (event.target as HTMLInputElement).value
-                      });
-                      field.onBlur();
-                    }}
                   />
-                  <div
-                    className="color-picker-display"
-                    style={{
-                      backgroundColor: field.value.color?.toString()
-                    }}
-                    onClick={() => {
-                      console.log("UFO", field.value.value);
-                      rowUpdate(rowIndex, {
-                        ...field.value,
-                        displayColorPicker: true
-                      });
-                    }}
-                  />
-                  {field.value.displayColorPicker && (
-                    <ColorPicker
-                      color={field.value.color}
-                      onClose={color => {
-                        rowUpdate(rowIndex, {
-                          ...field.value,
-                          displayColorPicker: false,
-                          color
-                        });
+                )}
+              />
+
+              <Controller
+                name={`rows.${rowIndex}.color`}
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <div>
+                    <div
+                      className="color-picker-display"
+                      style={{
+                        backgroundColor: value?.toString() ?? "#ffffff"
+                      }}
+                      onClick={() => {
+                        onColorPickerButtonClick(
+                          true,
+                          `rows.${rowIndex}.color`
+                        );
                       }}
                     />
-                  )}
-                </>
-              )}
-            />
+                    {colorPickerState[`rows.${rowIndex}.color`] && (
+                      <ColorPicker
+                        color={value}
+                        onClose={color => {
+                          onChange(color);
+                          onColorPickerButtonClick(
+                            false,
+                            `rows.${rowIndex}.color`
+                          );
+                        }}
+                      />
+                    )}
+                  </div>
+                )}
+              />
+            </div>
           ))}
         </div>
       </fieldset>
