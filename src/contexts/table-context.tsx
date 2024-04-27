@@ -24,7 +24,9 @@ type TableContextType = {
 };
 
 // TODO: bette type safety
-const TableContext = createContext<TableContextType>({} as TableContextType);
+const TableContext = createContext<TableContextType>({
+  tables: []
+} as unknown as TableContextType);
 
 export const TableContextProvider = ({ children }: PropsWithChildren) => {
   const { getAll, removeFromStorage, saveToStorage, getFromStorage } =
@@ -65,6 +67,39 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
     },
     [getFromStorage, tables]
   );
+
+  const handleTableResetAtRequestedTime = useCallback(() => {
+    const now = new Date();
+    const today = now.getDay();
+
+    if (now.getHours() >= 12) {
+      tables.forEach(table => {
+        if (table.timeOfReset === "always" || table.timeOfReset === today) {
+          // TODO: implement batchResetTable
+          reset(table.tableName);
+          updateState(table.tableName);
+        }
+      });
+    }
+  }, [reset, updateState, tables]);
+
+  useEffect(() => {
+    const date = new Date();
+    let interval: number | undefined = undefined;
+
+    setTimeout(
+      () => {
+        interval = setInterval(() => {
+          handleTableResetAtRequestedTime();
+        }, 60_000);
+      },
+      60 - date.getSeconds() * 1000
+    );
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [handleTableResetAtRequestedTime]);
 
   const removeFromState = useCallback(
     (tableName: string) =>

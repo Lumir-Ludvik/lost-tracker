@@ -7,6 +7,7 @@ import { Select } from "../../common/components/select/select.tsx";
 import { mapFormDataToTableDataType } from "./table-generator-mapper.ts";
 import { TableForm } from "./types.ts";
 import { useTableContext } from "../../contexts/table-context.tsx";
+import { Days, DaysSort, DaysSortType } from "../../common/types";
 
 export const TableGenerator = () => {
   const { saveTable } = useTableContext();
@@ -18,8 +19,9 @@ export const TableGenerator = () => {
   const { control, handleSubmit, reset } = useForm<TableForm>({
     defaultValues: {
       tableName: "",
-      columns: [{ value: "", color: "#ffffff" }],
-      rows: [{ value: "", color: "#ffffff" }]
+      timeOfReset: "always",
+      columns: [{ value: "", color: "#8B0000FF" }],
+      rows: [{ value: "", color: "#8B0000FF" }]
     }
   });
 
@@ -66,11 +68,13 @@ export const TableGenerator = () => {
       switch (typeOfInput) {
         case "column":
           value.trim()
-            ? appendColumn({ value: "", color: "" })
+            ? appendColumn({ value: "", color: "#8B0000FF" })
             : removeColumn(-1);
           break;
         case "row":
-          value.trim() ? appendRow({ value: "", color: "" }) : removeRow(-1);
+          value.trim()
+            ? appendRow({ value: "", color: "#8B0000FF" })
+            : removeRow(-1);
           break;
       }
 
@@ -114,17 +118,41 @@ export const TableGenerator = () => {
             name="timeOfReset"
             control={control}
             render={({ field, fieldState: { error } }) => (
-              <Select field={field} error={error} />
+              <Select
+                field={field}
+                error={error}
+                onChange={event => {
+                  field.onChange(
+                    (event.currentTarget as HTMLSelectElement).value
+                  );
+                }}
+              >
+                <option key={`time-of-reset-always`} value="always">
+                  Always
+                </option>
+                {Object.keys(Days)
+                  .filter(key => isNaN(Number(key)))
+                  .sort(
+                    (a, b) =>
+                      DaysSort.indexOf(a as DaysSortType) -
+                      DaysSort.indexOf(b as DaysSortType)
+                  )
+                  .map(day => (
+                    <option key={`time-of-reset-${day}`} value={day}>
+                      {day}
+                    </option>
+                  ))}
+              </Select>
             )}
           />
         </div>
       </fieldset>
 
+      <label>Columns:</label>
       <fieldset>
         <div className="fieldset-element-container">
-          <label>Columns:</label>
           {columnFields.map((column, columnIndex) => (
-            <div key={column.id}>
+            <div key={column.id} className="fieldset-column">
               <Controller
                 name={`columns.${columnIndex}.value`}
                 control={control}
@@ -135,19 +163,25 @@ export const TableGenerator = () => {
                   }
                 }}
                 render={({ field, fieldState: { error } }) => (
-                  <Input
-                    field={field}
-                    error={error}
-                    value={field.value}
-                    onChange={event => {
-                      handleInputChange(
-                        event,
-                        columnIndex + 1 === columnFields.length,
-                        "column",
-                        field.onChange
-                      );
-                    }}
-                  />
+                  <div>
+                    <label htmlFor={`column-name-${columnIndex}`}>
+                      Column name:
+                    </label>
+                    <Input
+                      id={`column-name-${columnIndex}`}
+                      field={field}
+                      error={error}
+                      value={field.value}
+                      onChange={event => {
+                        handleInputChange(
+                          event,
+                          columnIndex + 1 === columnFields.length,
+                          "column",
+                          field.onChange
+                        );
+                      }}
+                    />
+                  </div>
                 )}
               />
               <Controller
@@ -155,10 +189,11 @@ export const TableGenerator = () => {
                 control={control}
                 render={({ field: { value, onChange } }) => (
                   <div>
+                    <label>Column cell color:</label>
                     <div
                       className="color-picker-display"
                       style={{
-                        backgroundColor: value?.toString() ?? "#ffffff"
+                        backgroundColor: value?.toString() ?? "#8B0000FF"
                       }}
                       onClick={() => {
                         onColorPickerButtonClick(
@@ -187,11 +222,11 @@ export const TableGenerator = () => {
         </div>
       </fieldset>
 
+      <label>Rows:</label>
       <fieldset>
         <div className="fieldset-element-container">
-          <label>Rows:</label>
           {rowFields.map((row, rowIndex) => (
-            <div key={row.id}>
+            <div key={row.id} className="fieldset-row">
               <Controller
                 name={`rows.${rowIndex}.value`}
                 control={control}
@@ -202,19 +237,22 @@ export const TableGenerator = () => {
                   }
                 }}
                 render={({ field, fieldState: { error } }) => (
-                  <Input
-                    field={field}
-                    error={error}
-                    value={field.value}
-                    onChange={event => {
-                      handleInputChange(
-                        event,
-                        rowIndex + 1 === rowFields.length,
-                        "row",
-                        field.onChange
-                      );
-                    }}
-                  />
+                  <div>
+                    <label>Row name:</label>
+                    <Input
+                      field={field}
+                      error={error}
+                      value={field.value}
+                      onChange={event => {
+                        handleInputChange(
+                          event,
+                          rowIndex + 1 === rowFields.length,
+                          "row",
+                          field.onChange
+                        );
+                      }}
+                    />
+                  </div>
                 )}
               />
 
@@ -223,10 +261,11 @@ export const TableGenerator = () => {
                 control={control}
                 render={({ field: { value, onChange } }) => (
                   <div>
+                    <label>Row cell color:</label>
                     <div
                       className="color-picker-display"
                       style={{
-                        backgroundColor: value?.toString() ?? "#ffffff"
+                        backgroundColor: value?.toString() ?? "#8B0000FF"
                       }}
                       onClick={() => {
                         onColorPickerButtonClick(

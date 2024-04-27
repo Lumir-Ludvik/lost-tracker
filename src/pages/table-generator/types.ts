@@ -7,7 +7,7 @@ export type ElementType = {
 
 export type TableForm = {
   tableName: string;
-  timeOfReset: Days;
+  timeOfReset: Days | "always";
   columns: ElementType[];
   rows: ElementType[];
 };

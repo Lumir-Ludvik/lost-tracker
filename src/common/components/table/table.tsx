@@ -57,7 +57,15 @@ export const Table = ({ data }: TableProps) => {
       <table className="custom-table">
         <thead>
           <tr>
-            <th>{data.tableName}</th>
+            <th>
+              <div className="name-cell">
+                <span className="name">{data.tableName}</span>
+                <span className="reset">
+                  Resets on:{" "}
+                  <span className="reset-time">{data.timeOfReset}</span>
+                </span>
+              </div>
+            </th>
             {generateColumns}
           </tr>
         </thead>
