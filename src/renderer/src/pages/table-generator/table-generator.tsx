@@ -1,20 +1,19 @@
 import { ChangeEvent, useCallback, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import "./table-generator.scss";
-import { Input } from "../../common/components/input/input.tsx";
-import { ColorPicker } from "../../common/components/color-picker/color-picker.tsx";
-import { Select } from "../../common/components/select/select.tsx";
-import { mapFormDataToTableDataType } from "./table-generator-mapper.ts";
-import { TableForm } from "./types.ts";
-import { useTableContext } from "../../contexts/table-context.tsx";
+
 import { Days, DaysSort, DaysSortType } from "../../common/types";
+import { useTableContext } from "../../contexts/table-context";
+import { TableForm } from "./types";
+import { mapFormDataToTableDataType } from "./table-generator-mapper";
+import { Input } from "../../common/components/input/input";
+import { Select } from "../../common/components/select/select";
+import { ColorPicker } from "../../common/components/color-picker/color-picker";
 
 export const TableGenerator = () => {
   const { saveTable } = useTableContext();
 
-  const [colorPickerState, setColorPickerState] = useState<
-    Record<string, boolean>
-  >({});
+  const [colorPickerState, setColorPickerState] = useState<Record<string, boolean>>({});
 
   const { control, handleSubmit, reset } = useForm<TableForm>({
     defaultValues: {
@@ -68,12 +67,12 @@ export const TableGenerator = () => {
       switch (typeOfInput) {
         case "column":
           value.trim()
-            ? appendColumn({ value: "", color: "#8B0000FF" })
+            ? appendColumn({ value: "", color: "#8B0000FF" }, { shouldFocus: false })
             : removeColumn(-1);
           break;
         case "row":
           value.trim()
-            ? appendRow({ value: "", color: "#8B0000FF" })
+            ? appendRow({ value: "", color: "#8B0000FF" }, { shouldFocus: false })
             : removeRow(-1);
           break;
       }
@@ -121,23 +120,20 @@ export const TableGenerator = () => {
               <Select
                 field={field}
                 error={error}
-                onChange={event => {
-                  field.onChange(
-                    (event.currentTarget as HTMLSelectElement).value
-                  );
+                onChange={(event) => {
+                  field.onChange((event.currentTarget as HTMLSelectElement).value);
                 }}
               >
                 <option key={`time-of-reset-always`} value="always">
                   Always
                 </option>
                 {Object.keys(Days)
-                  .filter(key => isNaN(Number(key)))
+                  .filter((key) => isNaN(Number(key)))
                   .sort(
                     (a, b) =>
-                      DaysSort.indexOf(a as DaysSortType) -
-                      DaysSort.indexOf(b as DaysSortType)
+                      DaysSort.indexOf(a as DaysSortType) - DaysSort.indexOf(b as DaysSortType)
                   )
-                  .map(day => (
+                  .map((day) => (
                     <option key={`time-of-reset-${day}`} value={day}>
                       {day}
                     </option>
@@ -164,15 +160,13 @@ export const TableGenerator = () => {
                 }}
                 render={({ field, fieldState: { error } }) => (
                   <div>
-                    <label htmlFor={`column-name-${columnIndex}`}>
-                      Column name:
-                    </label>
+                    <label htmlFor={`column-name-${columnIndex}`}>Column name:</label>
                     <Input
                       id={`column-name-${columnIndex}`}
                       field={field}
                       error={error}
                       value={field.value}
-                      onChange={event => {
+                      onChange={(event) => {
                         handleInputChange(
                           event,
                           columnIndex + 1 === columnFields.length,
@@ -196,21 +190,15 @@ export const TableGenerator = () => {
                         backgroundColor: value?.toString() ?? "#8B0000FF"
                       }}
                       onClick={() => {
-                        onColorPickerButtonClick(
-                          true,
-                          `columns.${columnIndex}.color`
-                        );
+                        onColorPickerButtonClick(true, `columns.${columnIndex}.color`);
                       }}
                     />
                     {colorPickerState[`columns.${columnIndex}.color`] && (
                       <ColorPicker
                         color={value}
-                        onClose={color => {
+                        onClose={(color) => {
                           onChange(color);
-                          onColorPickerButtonClick(
-                            false,
-                            `columns.${columnIndex}.color`
-                          );
+                          onColorPickerButtonClick(false, `columns.${columnIndex}.color`);
                         }}
                       />
                     )}
@@ -243,7 +231,7 @@ export const TableGenerator = () => {
                       field={field}
                       error={error}
                       value={field.value}
-                      onChange={event => {
+                      onChange={(event) => {
                         handleInputChange(
                           event,
                           rowIndex + 1 === rowFields.length,
@@ -268,21 +256,15 @@ export const TableGenerator = () => {
                         backgroundColor: value?.toString() ?? "#8B0000FF"
                       }}
                       onClick={() => {
-                        onColorPickerButtonClick(
-                          true,
-                          `rows.${rowIndex}.color`
-                        );
+                        onColorPickerButtonClick(true, `rows.${rowIndex}.color`);
                       }}
                     />
                     {colorPickerState[`rows.${rowIndex}.color`] && (
                       <ColorPicker
                         color={value}
-                        onClose={color => {
+                        onClose={(color) => {
                           onChange(color);
-                          onColorPickerButtonClick(
-                            false,
-                            `rows.${rowIndex}.color`
-                          );
+                          onColorPickerButtonClick(false, `rows.${rowIndex}.color`);
                         }}
                       />
                     )}

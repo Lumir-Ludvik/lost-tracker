@@ -4,11 +4,10 @@ import "./header.scss";
 export const Header = () => {
   return (
     <div className="header">
-      <h2 className="headline">Task Tracker</h2>
-
+      <h2 className="headline">Lost Tracker</h2>
       <div className="links">
         <Link to="/" className="link">
-          Tasks
+          Tables
         </Link>
         <Link to="/generator" className="link">
           Create table
