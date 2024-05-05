@@ -32,13 +32,15 @@ export const Table = ({ data }: TableProps) => {
 				<td style={{ backgroundColor: row.color }}>{row.name}</td>
 				{row.statuses.map((status, statusIndex) => (
 					<td key={`chkbox-${statusIndex}`} className="un-checked">
-						<Checkbox
-							color={status ? "success" : "primary"}
-							isSelected={status}
-							onChange={(chkbox) =>
-								handleCheckBoxChange(data.tableName, rowIndex, statusIndex, chkbox.target.checked)
-							}
-						/>
+						{row.availableFor.includes(statusIndex) && (
+							<Checkbox
+								color={status ? "success" : "primary"}
+								isSelected={status}
+								onChange={(chkbox) =>
+									handleCheckBoxChange(data.tableName, rowIndex, statusIndex, chkbox.target.checked)
+								}
+							/>
+						)}
 					</td>
 				))}
 			</tr>

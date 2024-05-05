@@ -20,7 +20,7 @@ export const TableGenerator = () => {
 			tableName: "",
 			timeOfReset: "always",
 			columns: [{ value: "", color: "#8B0000FF" }],
-			rows: [{ value: "", color: "#8B0000FF" }]
+			rows: [{ value: "", color: "#8B0000FF", availableFor: [] }]
 		}
 	});
 
@@ -72,7 +72,7 @@ export const TableGenerator = () => {
 					break;
 				case "row":
 					value.trim()
-						? appendRow({ value: "", color: "#8B0000FF" }, { shouldFocus: false })
+						? appendRow({ value: "", color: "#8B0000FF", availableFor: [] }, { shouldFocus: false })
 						: removeRow(-1);
 					break;
 			}
@@ -106,6 +106,18 @@ export const TableGenerator = () => {
 		[]
 	);
 
+	// TODO: this is not responsive for all of the changes in column value maybe add watch
+	const availableForColumnsOptions = useMemo(
+		() =>
+			columnFields
+				.map((column, index) => ({
+					label: column.value,
+					value: index
+				}))
+				.filter((option) => option.label !== ""),
+		[columnFields]
+	);
+
 	return (
 		<form className="table-generator" onSubmit={handleSubmit(createTable)}>
 			<Controller
@@ -130,7 +142,7 @@ export const TableGenerator = () => {
 							field={field}
 							error={error}
 							onChange={(event) => {
-								field.onChange((event.currentTarget as HTMLSelectElement).value);
+								field.onChange(event.target.value);
 							}}
 							options={dayOfResetOptions}
 						/>
@@ -147,6 +159,7 @@ export const TableGenerator = () => {
 						<Controller
 							name={`columns.${columnIndex}.value`}
 							control={control}
+							// TODO: validation for unique name
 							rules={{
 								required: {
 									value: columnIndex === 0,
@@ -202,8 +215,9 @@ export const TableGenerator = () => {
 			</div>
 
 			<div className="rows-container">
-				<label>Rows:</label>
-				<label>Row cell color:</label>
+				<label className="rows-label">Rows:</label>
+				<label className="row-color-label">Row cell color:</label>
+				<label className="row-color-label">Available columns:</label>
 
 				{rowFields.map((row, rowIndex) => (
 					<React.Fragment key={row.id}>
@@ -238,7 +252,7 @@ export const TableGenerator = () => {
 							name={`rows.${rowIndex}.color`}
 							control={control}
 							render={({ field: { value, onChange } }) => (
-								<div>
+								<div className="flex justify-center">
 									<div
 										className="color-picker-display"
 										style={{
@@ -258,6 +272,23 @@ export const TableGenerator = () => {
 										/>
 									)}
 								</div>
+							)}
+						/>
+						<Controller
+							name={`rows.${rowIndex}.availableFor`}
+							control={control}
+							render={({ field, fieldState: { error } }) => (
+								<Select
+									selectionMode="multiple"
+									label="Available for columns"
+									field={field}
+									error={error}
+									onChange={(event) => {
+										field.onChange(event.target.value.split(",").map((value) => Number(value)));
+									}}
+									disabled={availableForColumnsOptions.length === 0}
+									options={availableForColumnsOptions}
+								/>
 							)}
 						/>
 					</React.Fragment>
