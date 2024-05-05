@@ -1,20 +1,30 @@
-import React, { PropsWithChildren } from "react";
 import { ControllerRenderProps, FieldError } from "react-hook-form";
+import {
+	Select as NextSelect,
+	SelectItem,
+	SelectProps as NextSelectProps
+} from "@nextui-org/react";
 
-type SelectProps = React.SelectHTMLAttributes<unknown> &
-  PropsWithChildren & {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    field: ControllerRenderProps<any, any>;
-    error: FieldError | undefined;
-  };
+export type SelectOptions = {
+	label: string;
+	value: string | number;
+};
 
-export const Select = ({ field, error, children, ...props }: SelectProps) => {
-  return (
-    <div className={`select ${error && "invalid"}`}>
-      <select {...field} {...props}>
-        {children}
-      </select>
-      {error && <p>{error.message}</p>}
-    </div>
-  );
+type SelectProps = Omit<NextSelectProps, "children"> & {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	field: ControllerRenderProps<any, any>;
+	error: FieldError | undefined;
+	options: SelectOptions[];
+};
+
+export const Select = ({ field, error, options, ...props }: SelectProps) => {
+	return (
+		<NextSelect isInvalid={!!error?.message} errorMessage={error?.message} {...field} {...props}>
+			{options.map((option) => (
+				<SelectItem key={option.value} value={option.value}>
+					{option.label}
+				</SelectItem>
+			))}
+		</NextSelect>
+	);
 };

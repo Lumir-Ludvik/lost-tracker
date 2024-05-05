@@ -5,11 +5,13 @@
   justify-content: flex-start;
   align-items: baseline;
   background-color: #0e2e44;
-  height: 2.6rem;
+  height: 4rem;
   -webkit-app-region: drag;
 
   .headline {
     margin: 0;
+		font-size: xx-large;
+		font-weight: bolder;
   }
 
   .links {

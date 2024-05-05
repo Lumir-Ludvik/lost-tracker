@@ -23,7 +23,10 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
-    "electron-updater": "^6.1.7"
+    "@nextui-org/react": "^2.3.6",
+    "electron-updater": "^6.1.7",
+    "framer-motion": "^11.1.7",
+    "next-themes": "^0.3.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
@@ -33,21 +36,25 @@
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.19",
     "electron": "^28.2.0",
     "electron-builder": "^24.9.1",
     "electron-vite": "^2.0.0",
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
+    "postcss-import": "^16.1.0",
+    "postcss-scss": "^4.0.9",
     "prettier": "^3.2.4",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.12",
     "react-color": "^2.19.3",
+    "react-dom": "^18.2.0",
     "react-error-boundary": "^4.0.13",
     "react-hook-form": "^7.51.3",
     "react-router": "^6.23.0",
     "react-router-dom": "^6.23.0",
-    "sass": "^1.75.0"
+    "sass": "^1.75.0",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12"
   }
 }
