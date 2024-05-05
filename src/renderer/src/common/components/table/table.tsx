@@ -1,14 +1,16 @@
 import { useMemo } from "react";
 import { TableDataType } from "../../types";
 import "./table.scss";
-import { Button, Checkbox } from "@nextui-org/react";
+import { Button, Checkbox, useDisclosure } from "@nextui-org/react";
 import { useTableContext } from "../../../contexts/table-context";
+import { EditTableModal } from "./edit-table-modal/exit-table-modal";
 
 type TableProps = {
 	data: TableDataType;
 };
 
 export const Table = ({ data }: TableProps) => {
+	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const { handleCheckBoxChange, resetTable, deleteTable } = useTableContext();
 
 	const generateColumns = useMemo(
@@ -48,32 +50,44 @@ export const Table = ({ data }: TableProps) => {
 	}, [data.rows, data.tableName, handleCheckBoxChange]);
 
 	return (
-		<div className="custom-table-container">
-			<table className="custom-table">
-				<thead>
-					<tr>
-						<th>
-							<div className="name-cell">
-								<span className="name">{data.tableName}</span>
-								<span className="reset">
-									Resets on: <span className="reset-time">{data.timeOfReset}</span>
-								</span>
-							</div>
-						</th>
-						{generateColumns}
-					</tr>
-				</thead>
-				<tbody>{generateRows}</tbody>
-			</table>
+		<>
+			<div className="custom-table-container">
+				<table className="custom-table">
+					<thead>
+						<tr>
+							<th>
+								<div className="name-cell">
+									<span className="name">{data.tableName}</span>
+									<span className="reset">
+										Resets on: <span className="reset-time">{data.timeOfReset}</span>
+									</span>
+								</div>
+							</th>
+							{generateColumns}
+						</tr>
+					</thead>
+					<tbody>{generateRows}</tbody>
+				</table>
 
-			<div className="actions">
-				<Button color="danger" onClick={() => deleteTable(data.tableName)}>
-					Delete
-				</Button>
-				<Button color="warning" onClick={() => resetTable(data.tableName)}>
-					Reset
-				</Button>
+				<div className="actions">
+					<Button color="danger" onClick={() => deleteTable(data.tableName)}>
+						Delete
+					</Button>
+					<Button color="primary" onClick={onOpen}>
+						Edit
+					</Button>
+					<Button color="warning" onClick={() => resetTable(data.tableName)}>
+						Reset
+					</Button>
+				</div>
 			</div>
-		</div>
+
+			<EditTableModal
+				tableData={data}
+				isOpen={isOpen}
+				onClose={onClose}
+				onOpenChange={onOpenChange}
+			/>
+		</>
 	);
 };

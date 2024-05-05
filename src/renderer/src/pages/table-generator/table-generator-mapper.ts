@@ -19,3 +19,17 @@ export const mapFormDataToTableDataType = (form: TableForm): TableDataType => ({
 			color: column.color
 		}))
 });
+
+export const mapTableDataTypeToFormData = (tableData: TableDataType): TableForm => ({
+	tableName: tableData.tableName,
+	timeOfReset: tableData.timeOfReset,
+	columns: tableData.columns.map((column) => ({
+		value: column.name,
+		color: column.color
+	})),
+	rows: tableData.rows.map((row) => ({
+		value: row.name,
+		color: row.color,
+		availableFor: row.availableFor
+	}))
+});

@@ -1,27 +1,53 @@
-import React, { ChangeEvent, useCallback, useMemo, useState } from "react";
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import "./table-generator.scss";
 import { useTableContext } from "../../contexts/table-context";
 import { TableForm } from "./types";
-import { mapFormDataToTableDataType } from "./table-generator-mapper";
+import { mapFormDataToTableDataType, mapTableDataTypeToFormData } from "./table-generator-mapper";
 import { Input } from "../../common/components/input/input";
 import { Select } from "../../common/components/select/select";
 import { ColorPicker } from "../../common/components/color-picker/color-picker";
 import { Button } from "@nextui-org/react";
-import { Days, DaysSort, DaysSortType } from "../../common/types";
+import { Days, DaysSort, DaysSortType, TableDataType } from "../../common/types";
 
-export const TableGenerator = () => {
+type TableGeneratorProps = {
+	tableData?: TableDataType;
+	onSubmitCallback?: () => void;
+};
+
+const emptyForm: TableForm = {
+	tableName: "",
+	timeOfReset: "always",
+	columns: [{ value: "", color: "#8B0000FF" }],
+	rows: [{ value: "", color: "#8B0000FF", availableFor: [] }]
+};
+
+export const TableGenerator = ({ tableData, onSubmitCallback }: TableGeneratorProps) => {
 	const { saveTable } = useTableContext();
+	const editEffectCheck = useRef(false);
 
+	const [isEdit, setIsEdit] = useState(false);
 	const [colorPickerState, setColorPickerState] = useState<Record<string, boolean>>({});
 
-	const { control, handleSubmit, reset } = useForm<TableForm>({
-		defaultValues: {
-			tableName: "",
-			timeOfReset: "always",
-			columns: [{ value: "", color: "#8B0000FF" }],
-			rows: [{ value: "", color: "#8B0000FF", availableFor: [] }]
+	useEffect(() => {
+		if (!isEdit && !tableData && !editEffectCheck.current) {
+			editEffectCheck.current = false;
+			return;
 		}
+
+		if (editEffectCheck.current) {
+			return;
+		}
+
+		setIsEdit(!!tableData);
+		reset(mapTableDataTypeToFormData(tableData!));
+		appendColumn({ value: "", color: "#8B0000FF" }, { shouldFocus: false });
+		appendRow({ value: "", color: "#8B0000FF", availableFor: [] }, { shouldFocus: false });
+		editEffectCheck.current = true;
+	}, []);
+
+	const { control, handleSubmit, reset } = useForm<TableForm>({
+		defaultValues: emptyForm
 	});
 
 	const {
@@ -46,6 +72,7 @@ export const TableGenerator = () => {
 		(data: TableForm) => {
 			saveTable(mapFormDataToTableDataType(data));
 			reset();
+			onSubmitCallback?.();
 		},
 		[reset, saveTable]
 	);
@@ -278,11 +305,13 @@ export const TableGenerator = () => {
 							name={`rows.${rowIndex}.availableFor`}
 							control={control}
 							render={({ field, fieldState: { error } }) => (
+								// TODO: cannot remove in edit
 								<Select
 									selectionMode="multiple"
 									label="Available for columns"
 									field={field}
 									error={error}
+									selectedKeys={field.value}
 									onChange={(event) => {
 										field.onChange(event.target.value.split(",").map((value) => Number(value)));
 									}}
@@ -296,7 +325,7 @@ export const TableGenerator = () => {
 			</div>
 			<div className="flex gap-4">
 				<Button color="primary" type="submit">
-					Create table
+					{isEdit ? "Save" : "Create"} table
 				</Button>
 				<Button color="secondary" type="button" onClick={() => reset()}>
 					Reset form

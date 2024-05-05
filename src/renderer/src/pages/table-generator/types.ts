@@ -1,15 +1,17 @@
 import { Days } from "../../common/types";
 
-export type ElementType = {
+export type ColumnElementType = {
 	value: string;
 	color?: string;
+};
+
+export type RowElementType = ColumnElementType & {
+	availableFor: number[];
 };
 
 export type TableForm = {
 	tableName: string;
 	timeOfReset: Days | "always";
-	columns: ElementType[];
-	rows: (ElementType & {
-		availableFor: number[];
-	})[];
+	columns: ColumnElementType[];
+	rows: RowElementType[];
 };
