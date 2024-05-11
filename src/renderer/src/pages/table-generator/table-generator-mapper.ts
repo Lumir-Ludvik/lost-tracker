@@ -7,6 +7,10 @@ export const mapFormDataToTableDataType = (form: TableForm): TableDataType => ({
 		.filter((column) => column.value !== "")
 		.map((row) => ({
 			...row,
+			availableFor: row.availableFor
+				.split(",")
+				.filter((parsedAvailable) => parsedAvailable)
+				.map((filteredAvailable) => Number(filteredAvailable)),
 			name: row.value,
 			statuses: new Array(form.columns.filter((column) => column.value !== "").length).fill(false),
 			color: row.color
@@ -30,6 +34,6 @@ export const mapTableDataTypeToFormData = (tableData: TableDataType): TableForm 
 	rows: tableData.rows.map((row) => ({
 		value: row.name,
 		color: row.color,
-		availableFor: row.availableFor
+		availableFor: row.availableFor.join(",")
 	}))
 });

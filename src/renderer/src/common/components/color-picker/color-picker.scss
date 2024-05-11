@@ -1,6 +1,6 @@
 .color-picker-container {
   position: absolute;
-  z-index: 1000;
+  z-index: 1;
 
   .color-picker-close-div {
     position: fixed;
@@ -10,3 +10,4 @@
     left: 0;
   }
 }
+

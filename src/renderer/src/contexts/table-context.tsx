@@ -67,7 +67,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 		const now = new Date();
 		const today = now.getDay();
 
-		if (now.getHours() >= 12) {
+		if (now.getHours() >= 13) {
 			tables.forEach((table) => {
 				if (table.timeOfReset === "always" || table.timeOfReset === today) {
 					// TODO: implement batchResetTable

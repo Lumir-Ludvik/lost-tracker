@@ -1,4 +1,5 @@
-import { Days } from "../../common/types";
+import { DayOfResetType, TableDataType } from "../../common/types";
+import { DEFAULT_TABLE_COLOR, DEFAULT_TIME_OF_RESET } from "../../common/constants";
 
 export type ColumnElementType = {
 	value: string;
@@ -6,12 +7,26 @@ export type ColumnElementType = {
 };
 
 export type RowElementType = ColumnElementType & {
-	availableFor: number[];
+	availableFor: string;
 };
 
 export type TableForm = {
 	tableName: string;
-	timeOfReset: Days | "always";
+	timeOfReset: DayOfResetType;
 	columns: ColumnElementType[];
 	rows: RowElementType[];
+};
+
+export type TypeOfInput = "row" | "column";
+
+export type TableGeneratorProps = {
+	tableData?: TableDataType;
+	onSubmitCallback?: () => void;
+};
+
+export const emptyForm: TableForm = {
+	tableName: "",
+	timeOfReset: DEFAULT_TIME_OF_RESET,
+	columns: [{ value: "", color: DEFAULT_TABLE_COLOR }],
+	rows: [{ value: "", color: DEFAULT_TABLE_COLOR, availableFor: "" }]
 };

@@ -12,7 +12,7 @@ export type ColumnDataType = {
 
 export type TableDataType = {
 	tableName: string;
-	timeOfReset: Days | "always";
+	timeOfReset: DayOfResetType;
 	rows: RowDataType[];
 	columns: ColumnDataType[];
 };
@@ -38,7 +38,9 @@ export enum Days {
 	Saturday
 }
 
+export type DayOfResetType = Days | "always" | "never";
+
 export type TimeTableType = {
 	tableKey: string;
-	dayOfReset: Days | "always";
+	dayOfReset: DayOfResetType;
 };
