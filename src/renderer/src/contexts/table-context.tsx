@@ -40,7 +40,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 	// private:
 	const updateState = useCallback(
-		(tableName: string) => {
+		(tableName: string, resetAt: number | null = null) => {
 			const nextTable = getFromStorage(tableName);
 			const nextState = [...tables];
 			const indexOfTable = nextState.findIndex((table) => table.tableName === tableName);
@@ -56,8 +56,10 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 			}
 
 			if (indexOfTable !== -1 && nextTable) {
+				nextTable.resetAt = resetAt;
 				nextState[indexOfTable] = nextTable;
 				setTables(nextState);
+				saveToStorage(nextTable);
 			}
 		},
 		[getFromStorage, tables]
@@ -69,21 +71,31 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 		if (now.getHours() >= 13) {
 			tables.forEach((table) => {
-				if (table.timeOfReset === "always" || table.timeOfReset === today) {
+				if (
+					((table.resetAt && new Date(table.resetAt).getDay() !== today) || !table.resetAt) &&
+					table.timeOfReset !== "never" &&
+					(table.timeOfReset === "always" || table.timeOfReset === today)
+				) {
 					// TODO: implement batchResetTable
 					reset(table.tableName);
-					updateState(table.tableName);
+					updateState(table.tableName, now.getTime());
 				}
 			});
 		}
-	}, [reset, updateState, tables]);
+	}, [tables, reset, updateState]);
 
 	useEffect(() => {
 		const date = new Date();
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		let interval: any;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		let timeout: any;
 
-		setTimeout(
+		// on startup
+		handleTableResetAtRequestedTime();
+
+		// eslint-disable-next-line prefer-const
+		timeout = setTimeout(
 			() => {
 				interval = setInterval(() => {
 					handleTableResetAtRequestedTime();
@@ -94,6 +106,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 		return () => {
 			clearInterval(interval);
+			clearTimeout(timeout);
 		};
 	}, [handleTableResetAtRequestedTime]);
 

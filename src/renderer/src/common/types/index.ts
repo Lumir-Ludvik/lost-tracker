@@ -11,6 +11,7 @@ export type ColumnDataType = {
 };
 
 export type TableDataType = {
+	resetAt: number | null;
 	tableName: string;
 	timeOfReset: DayOfResetType;
 	rows: RowDataType[];

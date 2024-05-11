@@ -3,7 +3,7 @@ import { TableDataType } from "../../types";
 import "./table.scss";
 import { Button, Checkbox, useDisclosure } from "@nextui-org/react";
 import { useTableContext } from "../../../contexts/table-context";
-import { EditTableModal } from "./edit-table-modal/exit-table-modal";
+import { EditTableModal } from "./edit-table-modal/edit-table-modal";
 
 type TableProps = {
 	data: TableDataType;

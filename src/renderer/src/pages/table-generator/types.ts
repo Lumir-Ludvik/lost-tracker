@@ -11,6 +11,7 @@ export type RowElementType = ColumnElementType & {
 };
 
 export type TableForm = {
+	resetAt: number | null;
 	tableName: string;
 	timeOfReset: DayOfResetType;
 	columns: ColumnElementType[];
@@ -25,6 +26,7 @@ export type TableGeneratorProps = {
 };
 
 export const emptyForm: TableForm = {
+	resetAt: null,
 	tableName: "",
 	timeOfReset: DEFAULT_TIME_OF_RESET,
 	columns: [{ value: "", color: DEFAULT_TABLE_COLOR }],
