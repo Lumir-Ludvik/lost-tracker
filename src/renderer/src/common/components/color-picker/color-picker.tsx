@@ -1,37 +1,43 @@
 import { ColorResult, SketchPicker, SketchPickerProps } from "react-color";
 import "./color-picker.scss";
-import { useCallback, useDeferredValue, useEffect, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 
 export type ColorPickerProps = Omit<SketchPickerProps, "onChange" | "color"> & {
-  color: string | undefined;
-  onClose: (color: string | undefined) => void;
+	color: string | undefined;
+	onClose: (color: string | undefined) => void;
 };
 
 export const ColorPicker = ({ color, onClose }: ColorPickerProps) => {
-  const [currentColor, setCurrentColor] = useState<string | undefined>(color);
+	const [currentColor, setCurrentColor] = useState<string | undefined>(color);
+	const sketchRef = useRef(null);
 
-  useEffect(() => {
-    setCurrentColor(color);
-  }, [color]);
+	useEffect(() => {
+		setCurrentColor(color);
+	}, [color]);
 
-  const deferredValue = useDeferredValue(currentColor);
+	useEffect(() => {
+		if (!sketchRef.current) {
+			return;
+		}
 
-  const handleChange = useCallback((color: ColorResult | undefined) => {
-    setCurrentColor(color?.hex);
-  }, []);
+		(sketchRef.current as HTMLElement)?.scrollIntoView({ behavior: "smooth" });
+	}, []);
 
-  return (
-    <div className="color-picker-container">
-      <div
-        className="color-picker-close-div"
-        onClick={() => {
-          onClose(currentColor);
-        }}
-      />
-      <SketchPicker
-        color={deferredValue}
-        onChange={pickerColor => handleChange(pickerColor)}
-      />
-    </div>
-  );
+	const deferredValue = useDeferredValue(currentColor);
+
+	const handleChange = useCallback((color: ColorResult | undefined) => {
+		setCurrentColor(color?.hex);
+	}, []);
+
+	return (
+		<div ref={sketchRef} className="color-picker-container">
+			<div
+				className="color-picker-close-div"
+				onClick={() => {
+					onClose(currentColor);
+				}}
+			/>
+			<SketchPicker color={deferredValue} onChange={(pickerColor) => handleChange(pickerColor)} />
+		</div>
+	);
 };

@@ -1,6 +1,6 @@
 .color-picker-container {
   position: absolute;
-  z-index: 1;
+  z-index: 100000;
 
   .color-picker-close-div {
     position: fixed;
@@ -9,5 +9,10 @@
     bottom: 0;
     left: 0;
   }
+
+	.sketch-picker {
+		// I hate this library...
+		background-color: #242424 !important;
+	}
 }
 

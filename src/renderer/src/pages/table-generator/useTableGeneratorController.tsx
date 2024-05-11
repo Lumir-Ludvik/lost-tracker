@@ -13,11 +13,19 @@ const DEFAULT_ROW = { value: "", color: DEFAULT_TABLE_COLOR, availableFor: "" };
 type UseTableGeneratorControllerProps = {
 	tableData?: TableDataType;
 	onSubmitCallback?: () => void;
+	triggerSubmit?: boolean;
+	triggerSubmitCallback?: (value: boolean) => void;
+	triggerReset?: boolean;
+	triggerResetCallback?: (value: boolean) => void;
 };
 
 export const useTableGeneratorController = ({
 	tableData,
-	onSubmitCallback
+	onSubmitCallback,
+	triggerReset,
+	triggerSubmit,
+	triggerSubmitCallback,
+	triggerResetCallback
 }: UseTableGeneratorControllerProps) => {
 	const { saveTable } = useTableContext();
 	const editEffectCheck = useRef(false);
@@ -26,25 +34,7 @@ export const useTableGeneratorController = ({
 	const [colorPickerState, setColorPickerState] = useState<Record<string, boolean>>({});
 	const [availableColumns, setAvailableColumns] = useState<SelectOptions[]>([]);
 
-	useEffect(() => {
-		if (!isEdit && !tableData && !editEffectCheck.current) {
-			editEffectCheck.current = false;
-			return;
-		}
-
-		if (editEffectCheck.current) {
-			return;
-		}
-
-		setIsEdit(!!tableData);
-		reset(mapTableDataTypeToFormData(tableData!));
-		appendColumn(DEFAULT_COLUMN, { shouldFocus: false });
-		appendRow(DEFAULT_ROW, { shouldFocus: false });
-		availableForColumnsOptions();
-		editEffectCheck.current = true;
-	}, []);
-
-	const { control, handleSubmit, getValues, reset } = useForm<TableForm>({
+	const { control, trigger, handleSubmit, getValues, reset } = useForm<TableForm>({
 		defaultValues: emptyForm
 	});
 
@@ -65,6 +55,52 @@ export const useTableGeneratorController = ({
 		control,
 		name: "rows"
 	});
+
+	useEffect(() => {
+		if (!triggerReset) {
+			return;
+		}
+
+		reset();
+		appendColumn(DEFAULT_COLUMN, { shouldFocus: false });
+		appendRow(DEFAULT_ROW, { shouldFocus: false });
+		triggerResetCallback?.(false);
+	}, [triggerReset]);
+
+	useEffect(() => {
+		if (!triggerSubmit) {
+			return;
+		}
+
+		void (async () => {
+			const res = await trigger();
+
+			if (!res) {
+				return;
+			}
+
+			await handleSubmit(createTable)();
+			triggerSubmitCallback?.(false);
+		})();
+	}, [triggerSubmit]);
+
+	useEffect(() => {
+		if (!isEdit && !tableData && !editEffectCheck.current) {
+			editEffectCheck.current = false;
+			return;
+		}
+
+		if (editEffectCheck.current) {
+			return;
+		}
+
+		setIsEdit(!!tableData);
+		reset(mapTableDataTypeToFormData(tableData!));
+		appendColumn(DEFAULT_COLUMN, { shouldFocus: false });
+		appendRow(DEFAULT_ROW, { shouldFocus: false });
+		availableForColumnsOptions();
+		editEffectCheck.current = true;
+	}, []);
 
 	const createTable = useCallback(
 		(data: TableForm) => {

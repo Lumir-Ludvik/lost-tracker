@@ -23,6 +23,11 @@ export type TypeOfInput = "row" | "column";
 export type TableGeneratorProps = {
 	tableData?: TableDataType;
 	onSubmitCallback?: () => void;
+	hasCustomActions?: boolean;
+	triggerSubmit?: boolean;
+	triggerSubmitCallback?: (value: boolean) => void;
+	triggerReset?: boolean;
+	triggerResetCallback?: (value: boolean) => void;
 };
 
 export const emptyForm: TableForm = {

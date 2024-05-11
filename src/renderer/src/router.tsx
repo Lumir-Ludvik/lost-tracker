@@ -1,11 +1,11 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createHashRouter } from "react-router-dom";
 import { Layout } from "./common/components/layout/layout";
 import { GenericError } from "./pages/generic-error-page/generic-error";
 import { TableView } from "./pages/table-view/table-view";
 import { TableGenerator } from "./pages/table-generator/table-generator";
 import { NotFound } from "./pages/not-found/not-found";
 
-export const Router = createBrowserRouter([
+export const Router = createHashRouter([
 	{
 		path: "/",
 		element: <Layout />,

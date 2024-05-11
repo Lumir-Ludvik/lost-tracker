@@ -1,17 +1,31 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { TableDataType } from "../../types";
 import "./table.scss";
-import { Button, Checkbox, useDisclosure } from "@nextui-org/react";
+import { Button, Checkbox, Image, useDisclosure } from "@nextui-org/react";
 import { useTableContext } from "../../../contexts/table-context";
-import { EditTableModal } from "./edit-table-modal/edit-table-modal";
+import deleteIcon from "../../../assets/icons/delete.svg";
+import editIcon from "../../../assets/icons/edit.svg";
+import resetIcon from "../../../assets/icons/reset.svg";
+import { EditTableModal } from "../edit-table-modal/edit-table-modal";
+import { ConfirmModal } from "../confirm-modal/confirm-modal";
 
 type TableProps = {
 	data: TableDataType;
 };
 
+type ConfirmModalType = {
+	isOpen: boolean;
+	action: "reset" | "delete" | "none";
+};
+
 export const Table = ({ data }: TableProps) => {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const { handleCheckBoxChange, resetTable, deleteTable } = useTableContext();
+
+	const [confirmModalState, setConfirmModalState] = useState<ConfirmModalType>({
+		isOpen: false,
+		action: "none"
+	});
 
 	const generateColumns = useMemo(
 		() =>
@@ -70,14 +84,23 @@ export const Table = ({ data }: TableProps) => {
 				</table>
 
 				<div className="actions">
-					<Button color="danger" onClick={() => deleteTable(data.tableName)}>
-						Delete
+					<Button
+						color="default"
+						isIconOnly
+						fullWidth={false}
+						onClick={() => setConfirmModalState({ action: "delete", isOpen: true })}
+					>
+						<Image src={deleteIcon} isZoomed alt="delete" width="24" />
 					</Button>
-					<Button color="primary" onClick={onOpen}>
-						Edit
+					<Button color="default" isIconOnly onClick={onOpen}>
+						<Image src={editIcon} isZoomed alt="delete" width="24" />
 					</Button>
-					<Button color="warning" onClick={() => resetTable(data.tableName)}>
-						Reset
+					<Button
+						color="default"
+						isIconOnly
+						onClick={() => setConfirmModalState({ action: "reset", isOpen: true })}
+					>
+						<Image src={resetIcon} isZoomed alt="delete" width="24" />
 					</Button>
 				</div>
 			</div>
@@ -87,6 +110,20 @@ export const Table = ({ data }: TableProps) => {
 				isOpen={isOpen}
 				onClose={onClose}
 				onOpenChange={onOpenChange}
+			/>
+
+			<ConfirmModal
+				isOpen={confirmModalState.isOpen}
+				onOpenChange={(isOpen) => setConfirmModalState((value) => ({ ...value, isOpen }))}
+				title={`${confirmModalState.action === "delete" ? "Delete" : "Reset"} ${data.tableName}`}
+				text={`Are you sure you want to ${confirmModalState.action} table called: ${data.tableName}?`}
+				onAccept={() => {
+					confirmModalState.action === "delete"
+						? deleteTable(data.tableName)
+						: resetTable(data.tableName);
+					setConfirmModalState({ action: "none", isOpen: false });
+				}}
+				onDecline={() => setConfirmModalState((value) => ({ ...value, isOpen: false }))}
 			/>
 		</>
 	);
