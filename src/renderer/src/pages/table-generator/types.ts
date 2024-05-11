@@ -26,7 +26,7 @@ export type TableGeneratorProps = {
 };
 
 export const emptyForm: TableForm = {
-	resetAt: null,
+	resetAt: new Date().getTime(),
 	tableName: "",
 	timeOfReset: DEFAULT_TIME_OF_RESET,
 	columns: [{ value: "", color: DEFAULT_TABLE_COLOR }],
