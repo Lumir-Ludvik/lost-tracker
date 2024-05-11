@@ -92,7 +92,8 @@ export const useTableGeneratorController = ({
 			event: ChangeEvent<unknown>,
 			isLast: boolean,
 			typeOfInput: TypeOfInput,
-			onChange: (...event: unknown[]) => void
+			onChange: (...event: unknown[]) => void,
+			currentIndex: number
 		) => {
 			const value = (event.target as HTMLInputElement).value;
 			if (!isLast && value) {
@@ -103,10 +104,10 @@ export const useTableGeneratorController = ({
 
 			switch (typeOfInput) {
 				case "column":
-					value ? appendColumn(DEFAULT_COLUMN, { shouldFocus: false }) : removeColumn(-1);
+					value ? appendColumn(DEFAULT_COLUMN, { focusIndex: currentIndex }) : removeColumn(-1);
 					break;
 				case "row":
-					value ? appendRow(DEFAULT_ROW, { shouldFocus: false }) : removeRow(-1);
+					value ? appendRow(DEFAULT_ROW, { focusIndex: currentIndex }) : removeRow(-1);
 					break;
 			}
 

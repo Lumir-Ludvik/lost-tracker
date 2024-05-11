@@ -85,7 +85,8 @@ export const TableGenerator = ({ tableData, onSubmitCallback }: TableGeneratorPr
 											event,
 											columnIndex + 1 === columnFields.length,
 											"column",
-											field.onChange
+											field.onChange,
+											columnIndex
 										);
 									}}
 								/>
@@ -148,7 +149,8 @@ export const TableGenerator = ({ tableData, onSubmitCallback }: TableGeneratorPr
 											event,
 											rowIndex + 1 === rowFields.length,
 											"row",
-											field.onChange
+											field.onChange,
+											rowIndex
 										);
 									}}
 								/>
