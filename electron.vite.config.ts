@@ -16,6 +16,6 @@ export default defineConfig({
 				"@renderer": resolve("src/renderer/src")
 			}
 		},
-		plugins: [react(), renderer(), externalizeDepsPlugin({ exclude: ["fs", "stream"] })]
+		plugins: [react(), renderer()]
 	}
 });
