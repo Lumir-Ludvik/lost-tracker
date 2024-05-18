@@ -11,6 +11,7 @@ const DEFAULT_COLUMN = { value: "", color: DEFAULT_TABLE_COLOR };
 const DEFAULT_ROW = { value: "", color: DEFAULT_TABLE_COLOR, availableFor: "" };
 
 type UseTableGeneratorControllerProps = {
+	tableKey?: string;
 	tableData?: TableDataType;
 	onSubmitCallback?: () => void;
 	triggerSubmit?: boolean;
@@ -20,6 +21,7 @@ type UseTableGeneratorControllerProps = {
 };
 
 export const useTableGeneratorController = ({
+	tableKey,
 	tableData,
 	onSubmitCallback,
 	triggerReset,
@@ -110,12 +112,12 @@ export const useTableGeneratorController = ({
 	}, []);
 
 	const createTable = useCallback(
-		(data: TableForm) => {
-			saveTable(mapFormDataToTableDataType(data));
+		async (data: TableForm) => {
+			await saveTable(mapFormDataToTableDataType(data), isEdit ? tableKey : null);
 			reset();
 			onSubmitCallback?.();
 		},
-		[reset, saveTable]
+		[reset, saveTable, isEdit]
 	);
 
 	const availableForColumnsOptions = useCallback(() => {

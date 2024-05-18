@@ -12,6 +12,7 @@ import { generateTimeString } from "../../utils";
 
 type TableProps = {
 	data: TableDataType;
+	tableKey: string;
 };
 
 type ConfirmModalType = {
@@ -19,7 +20,7 @@ type ConfirmModalType = {
 	action: "reset" | "delete" | "none";
 };
 
-export const Table = ({ data }: TableProps) => {
+export const Table = ({ tableKey, data }: TableProps) => {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const { handleCheckBoxChange, resetTable, deleteTable } = useTableContext();
 
@@ -54,7 +55,7 @@ export const Table = ({ data }: TableProps) => {
 								color={status ? "success" : "primary"}
 								isSelected={status}
 								onChange={(chkbox) =>
-									handleCheckBoxChange(data.tableName, rowIndex, statusIndex, chkbox.target.checked)
+									handleCheckBoxChange(tableKey, rowIndex, statusIndex, chkbox.target.checked)
 								}
 							/>
 						)}
@@ -79,7 +80,7 @@ export const Table = ({ data }: TableProps) => {
 										</span>
 										{data.dayOfReset !== "never" && (
 											<span>
-												at:{" "}
+												at:
 												<span className="reset-time">{generateTimeString(data.timeOfReset)}</span>
 											</span>
 										)}
@@ -115,6 +116,7 @@ export const Table = ({ data }: TableProps) => {
 			</div>
 
 			<EditTableModal
+				tableKey={tableKey}
 				tableData={data}
 				isOpen={isOpen}
 				onClose={onClose}
@@ -127,9 +129,7 @@ export const Table = ({ data }: TableProps) => {
 				title={`${confirmModalState.action === "delete" ? "Delete" : "Reset"} ${data.tableName}`}
 				text={`Are you sure you want to ${confirmModalState.action} table called: ${data.tableName}?`}
 				onAccept={() => {
-					confirmModalState.action === "delete"
-						? deleteTable(data.tableName)
-						: resetTable(data.tableName);
+					confirmModalState.action === "delete" ? deleteTable(tableKey) : resetTable(tableKey);
 					setConfirmModalState({ action: "none", isOpen: false });
 				}}
 				onDecline={() => setConfirmModalState((value) => ({ ...value, isOpen: false }))}

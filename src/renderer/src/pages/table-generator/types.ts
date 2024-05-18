@@ -27,6 +27,7 @@ export type TableForm = {
 export type TypeOfInput = "row" | "column";
 
 export type TableGeneratorProps = {
+	tableKey?: string;
 	tableData?: TableDataType;
 	onSubmitCallback?: () => void;
 	hasCustomActions?: boolean;

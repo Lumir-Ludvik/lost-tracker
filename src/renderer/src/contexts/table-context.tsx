@@ -9,12 +9,14 @@ import {
 import { TableDataType } from "../common/types";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useResetTable } from "../hooks/useResetTable";
+import { useFileSystem } from "../hooks/useFileSystem";
+import { uuidv4 } from "../common/utils";
 
 type TableContextType = {
-	tables: TableDataType[];
-	resetTable: (tableName: string) => void;
+	tables: Record<string, TableDataType>;
+	resetTable: (tableName: string) => Promise<void>;
 	deleteTable: (tableName: string) => void;
-	saveTable: (data: TableDataType) => void;
+	saveTable: (data: TableDataType, tableKey?: string | null) => Promise<void>;
 	handleCheckBoxChange: (
 		tableName: string,
 		rowIndex: number,
@@ -29,61 +31,76 @@ const TableContext = createContext<TableContextType>({
 } as unknown as TableContextType);
 
 export const TableContextProvider = ({ children }: PropsWithChildren) => {
+	const { writeToFileAsync, readFileAsync } = useFileSystem();
 	const { getAll, removeFromStorage, saveToStorage, getFromStorage } = useLocalStorage();
+	//TODO: why do I have this hook?
 	const { resetTable: reset } = useResetTable();
 
-	const [tables, setTables] = useState<TableDataType[]>([]);
+	const [tables, setTables] = useState<Record<string, TableDataType>>({});
 
 	useEffect(() => {
-		setTables(getAll());
+		void (async () => {
+			const data = await readFileAsync();
+			if (!data) {
+				// TODO: toast
+				return;
+			}
+
+			setTables(JSON.parse(data));
+		})();
+
+		// setTables(getAll());
 	}, [getAll]);
 
 	// private:
 	const updateState = useCallback(
-		(tableName: string, resetAt: number | null = null) => {
-			const nextTable = getFromStorage(tableName);
-			const nextState = [...tables];
-			const indexOfTable = nextState.findIndex((table) => table.tableName === tableName);
-
-			if (indexOfTable === -1 && !nextTable) {
-				console.error(`Cannot update TableContext state. Table called ${tableName} was not found!`);
+		async (tableKey: string, data: TableDataType | null, resetAt: number | null = null) => {
+			if (!tables[tableKey]) {
+				console.error(
+					`Cannot update TableContext state. Table with key ${tableKey} was not found!`
+				);
 				return;
 			}
 
-			if (nextTable && indexOfTable === -1) {
-				setTables([...tables, nextTable]);
-				return;
+			let nextState = {};
+
+			if (!data) {
+				Object.keys(tables)
+					.filter((key) => key !== tableKey)
+					.forEach((key) => {
+						nextState[key] = tables[key];
+					});
+			} else {
+				nextState = { ...tables };
+				nextState[tableKey] = { ...data, resetAt };
 			}
 
-			if (indexOfTable !== -1 && nextTable) {
-				nextTable.resetAt = resetAt;
-				nextState[indexOfTable] = nextTable;
-				setTables(nextState);
-				saveToStorage(nextTable);
-			}
+			setTables(nextState);
+			//TODO: implement update to file
+			await writeToFileAsync(JSON.stringify(nextState));
 		},
 		[getFromStorage, tables]
 	);
 
-	const handleTableResetAtRequestedTime = useCallback(() => {
+	const handleTableResetAtRequestedTime = useCallback(async () => {
 		const now = new Date();
 		const today = now.getDay();
 
-		// if (now.getHours() >= 13) {
-		tables.forEach((table) => {
+		for (const tableKey of Object.keys(tables)) {
 			if (
-				now.getHours() >= table.timeOfReset.hour &&
-				now.getMinutes() >= table.timeOfReset.minute &&
-				((table.resetAt && new Date(table.resetAt).getDay() !== today) || !table.resetAt) &&
-				table.dayOfReset !== "never" &&
-				(table.dayOfReset === "always" || table.dayOfReset === today)
+				now.getHours() >= tables[tableKey].timeOfReset.hour &&
+				now.getMinutes() >= tables[tableKey].timeOfReset.minute &&
+				((tables[tableKey].resetAt &&
+					new Date(tables[tableKey]?.resetAt ?? "").getDay() !== today) ||
+					!tables[tableKey].resetAt) &&
+				tables[tableKey].dayOfReset !== "never" &&
+				(tables[tableKey].dayOfReset === "always" || tables[tableKey].dayOfReset === today)
 			) {
 				// TODO: implement batchResetTable
-				reset(table.tableName);
-				updateState(table.tableName, now.getTime());
+				const clearedTable = reset(tables[tableKey]);
+				await updateState(tableKey, clearedTable, now.getTime());
 			}
-		});
-		// }
+		}
 	}, [tables, reset, updateState]);
 
 	useEffect(() => {
@@ -94,17 +111,19 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 		let timeout: any;
 
 		// on startup
-		handleTableResetAtRequestedTime();
+		void (async () => {
+			await handleTableResetAtRequestedTime();
 
-		// eslint-disable-next-line prefer-const
-		timeout = setTimeout(
-			() => {
-				interval = setInterval(() => {
-					handleTableResetAtRequestedTime();
-				}, 60_000);
-			},
-			60 - date.getSeconds() * 1000
-		);
+			// eslint-disable-next-line prefer-const
+			timeout = setTimeout(
+				() => {
+					interval = setInterval(async () => {
+						await handleTableResetAtRequestedTime();
+					}, 60_000);
+				},
+				60 - date.getSeconds() * 1000
+			);
+		})();
 
 		return () => {
 			clearInterval(interval);
@@ -113,54 +132,73 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	}, [handleTableResetAtRequestedTime]);
 
 	const removeFromState = useCallback(
-		(tableName: string) => setTables([...tables].filter((table) => table.tableName !== tableName)),
+		(removeKey: string) => {
+			const nextTables = {};
+
+			Object.keys(tables)
+				.filter((tableKey) => tableKey !== removeKey)
+				.forEach((key) => {
+					nextTables[key] = tables[key];
+				});
+
+			setTables(nextTables);
+		},
 		[tables]
 	);
 
 	// public:
 	const resetTable = useCallback(
-		(tableName: string) => {
-			reset(tableName);
-			updateState(tableName);
+		async (tableKey: string) => {
+			const clearedTable = reset(tables[tableKey]);
+			await updateState(tableKey, clearedTable, new Date().getTime());
 		},
 		[reset, updateState]
 	);
 
 	const deleteTable = useCallback(
-		(tableName: string) => {
-			removeFromStorage(tableName);
-			removeFromState(tableName);
+		async (tableKey: string) => {
+			await updateState(tableKey, null);
 		},
 		[removeFromStorage, removeFromState]
 	);
 
 	const saveTable = useCallback(
-		(data: TableDataType) => {
-			saveToStorage(data);
-			updateState(data.tableName);
+		async (data: TableDataType, tableKey: string | null = null) => {
+			void (async () => {
+				let nextTables = { ...tables };
+
+				if (tableKey) {
+					nextTables[tableKey] = data;
+				} else {
+					const newKey = uuidv4();
+					nextTables = { ...nextTables, [newKey]: data };
+				}
+
+				const res = await writeToFileAsync(JSON.stringify(nextTables));
+				if (!res) {
+					// TODO: add error toast for user
+				}
+
+				setTables(nextTables);
+			})();
 		},
 		[saveToStorage, updateState]
 	);
 
 	const handleCheckBoxChange = useCallback(
-		(tableName: string, rowIndex: number, statusIndex: number, change: boolean) => {
-			const tableIndex = tables.findIndex((table) => table.tableName === tableName);
-
-			if (tableIndex === -1) {
+		async (tableKey: string, rowIndex: number, statusIndex: number, change: boolean) => {
+			if (!tables[tableKey]) {
 				console.error(
-					`Cannot update state of ${tableName} table because no such table exists in TableContext`
+					`Cannot update state of table with key ${tableKey} because no such table exists in TableContext`
 				);
 				return;
 			}
 
-			const nextTable = { ...tables[tableIndex] };
-			nextTable.rows[rowIndex].statuses[statusIndex] = change;
-
-			const nextState = [...tables];
-			nextState[tableIndex] = nextTable;
+			const nextState = { ...tables };
+			nextState[tableKey].rows[rowIndex].statuses[statusIndex] = change;
 
 			setTables(nextState);
-			saveToStorage(nextTable);
+			await writeToFileAsync(JSON.stringify(nextState));
 		},
 		[saveToStorage, tables]
 	);

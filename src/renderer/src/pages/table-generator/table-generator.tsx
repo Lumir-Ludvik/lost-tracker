@@ -11,6 +11,7 @@ import { useTableGeneratorController } from "./useTableGeneratorController";
 import { TimeInput } from "../../common/components/time-input/time-input";
 
 export const TableGenerator = ({
+	tableKey,
 	tableData,
 	onSubmitCallback,
 	triggerSubmit,
@@ -35,6 +36,7 @@ export const TableGenerator = ({
 		isEdit,
 		dayOfResetValue
 	} = useTableGeneratorController({
+		tableKey,
 		tableData,
 		onSubmitCallback,
 		triggerSubmit,

@@ -15,13 +15,16 @@ type EditTableModalProps = {
 	isOpen: boolean;
 	onClose: () => void;
 	onOpenChange: (isOpen: boolean) => void;
+	tableKey: string;
 	tableData: TableDataType;
 };
 
+//TODO: when editing already checked table the statuses reset
 export const EditTableModal = ({
 	isOpen,
 	onClose,
 	onOpenChange,
+	tableKey,
 	tableData
 }: EditTableModalProps) => {
 	const [triggerSubmit, setTriggerSubmit] = useState(false);
@@ -39,6 +42,7 @@ export const EditTableModal = ({
 				<ModalHeader>Edit {tableData.tableName}</ModalHeader>
 				<ModalBody>
 					<TableGenerator
+						tableKey={tableKey}
 						hasCustomActions
 						tableData={tableData}
 						onSubmitCallback={onClose}
