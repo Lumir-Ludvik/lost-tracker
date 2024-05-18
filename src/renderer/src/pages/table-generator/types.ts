@@ -1,5 +1,10 @@
 import { DayOfResetType, TableDataType } from "../../common/types";
-import { DEFAULT_TABLE_COLOR, DEFAULT_TIME_OF_RESET } from "../../common/constants";
+import {
+	DEFAULT_DAY_OF_RESET,
+	DEFAULT_TABLE_COLOR,
+	DEFAULT_TIME_OF_RESET
+} from "../../common/constants";
+import { Time } from "@internationalized/date";
 
 export type ColumnElementType = {
 	value: string;
@@ -13,7 +18,8 @@ export type RowElementType = ColumnElementType & {
 export type TableForm = {
 	resetAt: number | null;
 	tableName: string;
-	timeOfReset: DayOfResetType;
+	dayOfReset: DayOfResetType;
+	timeOfReset: Time;
 	columns: ColumnElementType[];
 	rows: RowElementType[];
 };
@@ -33,6 +39,7 @@ export type TableGeneratorProps = {
 export const emptyForm: TableForm = {
 	resetAt: new Date().getTime(),
 	tableName: "",
+	dayOfReset: DEFAULT_DAY_OF_RESET,
 	timeOfReset: DEFAULT_TIME_OF_RESET,
 	columns: [{ value: "", color: DEFAULT_TABLE_COLOR }],
 	rows: [{ value: "", color: DEFAULT_TABLE_COLOR, availableFor: "" }]

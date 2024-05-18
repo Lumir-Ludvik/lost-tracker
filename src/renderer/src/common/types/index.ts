@@ -1,3 +1,5 @@
+import { Time } from "@internationalized/date";
+
 export type RowDataType = {
 	name: string;
 	statuses: boolean[];
@@ -13,7 +15,8 @@ export type ColumnDataType = {
 export type TableDataType = {
 	resetAt: number | null;
 	tableName: string;
-	timeOfReset: DayOfResetType;
+	dayOfReset: DayOfResetType;
+	timeOfReset: Time;
 	rows: RowDataType[];
 	columns: ColumnDataType[];
 };

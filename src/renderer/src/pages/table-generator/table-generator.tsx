@@ -8,6 +8,7 @@ import { ColorPicker } from "../../common/components/color-picker/color-picker";
 import { Accordion, AccordionItem, Button } from "@nextui-org/react";
 import { DEFAULT_TABLE_COLOR } from "../../common/constants";
 import { useTableGeneratorController } from "./useTableGeneratorController";
+import { TimeInput } from "../../common/components/time-input/time-input";
 
 export const TableGenerator = ({
 	tableData,
@@ -31,7 +32,8 @@ export const TableGenerator = ({
 		reset,
 		rowFields,
 		handleSubmit,
-		isEdit
+		isEdit,
+		dayOfResetValue
 	} = useTableGeneratorController({
 		tableData,
 		onSubmitCallback,
@@ -54,13 +56,16 @@ export const TableGenerator = ({
 				)}
 			/>
 
-			<div>
+			<div className="flex gap-3">
 				<Controller
-					name="timeOfReset"
+					name="dayOfReset"
 					control={control}
 					render={({ field, fieldState: { error } }) => (
 						<Select
+							disallowEmptySelection
 							label="Day of reset"
+							value={field.value}
+							selectedKeys={[field.value]}
 							defaultSelectedKeys={["never"]}
 							field={field}
 							error={error}
@@ -68,6 +73,18 @@ export const TableGenerator = ({
 								field.onChange(event.target.value);
 							}}
 							options={dayOfResetOptions}
+						/>
+					)}
+				/>
+				<Controller
+					name="timeOfReset"
+					control={control}
+					render={({ field, fieldState: { error } }) => (
+						<TimeInput
+							isDisabled={dayOfResetValue === "never"}
+							label="Time of reset"
+							field={field}
+							error={error}
 						/>
 					)}
 				/>
@@ -140,6 +157,7 @@ export const TableGenerator = ({
 				</AccordionItem>
 			</Accordion>
 
+			{/*// TODO: fucks with click focus for fields*/}
 			<Accordion defaultExpandedKeys={["1"]} variant="bordered">
 				<AccordionItem key="1" title="Rows" className="color-picker-field-container">
 					<div className="rows-container">
@@ -227,6 +245,7 @@ export const TableGenerator = ({
 					<Button color="primary" type="submit">
 						{isEdit ? "Save" : "Create"} table
 					</Button>
+					{/*//TODO: reset doesn't work for dayOfReset*/}
 					<Button color="secondary" type="button" onClick={() => reset()}>
 						Reset form
 					</Button>

@@ -4,7 +4,7 @@ import { mapFormDataToTableDataType, mapTableDataTypeToFormData } from "./table-
 import { Days, DaysSort, DaysSortType, TableDataType } from "../../common/types";
 import { useTableContext } from "../../contexts/table-context";
 import { SelectOptions } from "../../common/components/select/select";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { DEFAULT_TABLE_COLOR } from "../../common/constants";
 
 const DEFAULT_COLUMN = { value: "", color: DEFAULT_TABLE_COLOR };
@@ -37,6 +37,7 @@ export const useTableGeneratorController = ({
 	const { control, trigger, handleSubmit, getValues, reset } = useForm<TableForm>({
 		defaultValues: emptyForm
 	});
+	const dayOfResetValue = useWatch({ control, name: "dayOfReset" });
 
 	const {
 		fields: columnFields,
@@ -56,35 +57,41 @@ export const useTableGeneratorController = ({
 		name: "rows"
 	});
 
-	useEffect(() => {
-		if (!triggerReset) {
-			return;
-		}
-
-		reset();
-		appendColumn(DEFAULT_COLUMN, { shouldFocus: false });
-		appendRow(DEFAULT_ROW, { shouldFocus: false });
-		triggerResetCallback?.(false);
-	}, [triggerReset]);
-
-	useEffect(() => {
-		if (!triggerSubmit) {
-			return;
-		}
-
-		void (async () => {
-			const res = await trigger();
-
-			if (!res) {
+	useEffect(
+		function triggerResetForCustomControls() {
+			if (!triggerReset) {
 				return;
 			}
 
-			await handleSubmit(createTable)();
-			triggerSubmitCallback?.(false);
-		})();
-	}, [triggerSubmit]);
+			reset();
+			appendColumn(DEFAULT_COLUMN, { shouldFocus: false });
+			appendRow(DEFAULT_ROW, { shouldFocus: false });
+			triggerResetCallback?.(false);
+		},
+		[triggerReset]
+	);
 
-	useEffect(() => {
+	useEffect(
+		function triggerSubmitForCustomControls() {
+			if (!triggerSubmit) {
+				return;
+			}
+
+			void (async () => {
+				const res = await trigger();
+
+				if (!res) {
+					return;
+				}
+
+				await handleSubmit(createTable)();
+				triggerSubmitCallback?.(false);
+			})();
+		},
+		[triggerSubmit]
+	);
+
+	useEffect(function applyDataToEditForm() {
 		if (!isEdit && !tableData && !editEffectCheck.current) {
 			editEffectCheck.current = false;
 			return;
@@ -194,6 +201,7 @@ export const useTableGeneratorController = ({
 		colorPickerState,
 		availableColumns,
 		reset,
-		isEdit
+		isEdit,
+		dayOfResetValue
 	};
 };

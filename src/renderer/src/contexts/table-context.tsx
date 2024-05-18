@@ -69,19 +69,21 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 		const now = new Date();
 		const today = now.getDay();
 
-		if (now.getHours() >= 13) {
-			tables.forEach((table) => {
-				if (
-					((table.resetAt && new Date(table.resetAt).getDay() !== today) || !table.resetAt) &&
-					table.timeOfReset !== "never" &&
-					(table.timeOfReset === "always" || table.timeOfReset === today)
-				) {
-					// TODO: implement batchResetTable
-					reset(table.tableName);
-					updateState(table.tableName, now.getTime());
-				}
-			});
-		}
+		// if (now.getHours() >= 13) {
+		tables.forEach((table) => {
+			if (
+				now.getHours() >= table.timeOfReset.hour &&
+				now.getMinutes() >= table.timeOfReset.minute &&
+				((table.resetAt && new Date(table.resetAt).getDay() !== today) || !table.resetAt) &&
+				table.dayOfReset !== "never" &&
+				(table.dayOfReset === "always" || table.dayOfReset === today)
+			) {
+				// TODO: implement batchResetTable
+				reset(table.tableName);
+				updateState(table.tableName, now.getTime());
+			}
+		});
+		// }
 	}, [tables, reset, updateState]);
 
 	useEffect(() => {

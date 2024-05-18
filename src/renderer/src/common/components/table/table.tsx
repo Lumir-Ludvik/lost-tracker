@@ -8,6 +8,7 @@ import editIcon from "../../../assets/icons/edit.svg";
 import resetIcon from "../../../assets/icons/reset.svg";
 import { EditTableModal } from "../edit-table-modal/edit-table-modal";
 import { ConfirmModal } from "../confirm-modal/confirm-modal";
+import { generateTimeString } from "../../utils";
 
 type TableProps = {
 	data: TableDataType;
@@ -72,9 +73,17 @@ export const Table = ({ data }: TableProps) => {
 							<th>
 								<div className="name-cell">
 									<span className="name">{data.tableName}</span>
-									<span className="reset">
-										Resets on: <span className="reset-time">{data.timeOfReset}</span>
-									</span>
+									<div className="reset">
+										<span>
+											Resets on: <span className="reset-time">{data.dayOfReset}</span>
+										</span>
+										{data.dayOfReset !== "never" && (
+											<span>
+												at:{" "}
+												<span className="reset-time">{generateTimeString(data.timeOfReset)}</span>
+											</span>
+										)}
+									</div>
 								</div>
 							</th>
 							{generateColumns}

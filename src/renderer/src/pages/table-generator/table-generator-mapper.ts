@@ -28,7 +28,7 @@ export const mapFormDataToTableDataType = (form: TableForm): TableDataType => ({
 export const mapTableDataTypeToFormData = (tableData: TableDataType): TableForm => ({
 	...tableData,
 	tableName: tableData.tableName,
-	timeOfReset: tableData.timeOfReset,
+	dayOfReset: tableData.dayOfReset,
 	columns: tableData.columns.map((column) => ({
 		value: column.name,
 		color: column.color

@@ -26,6 +26,9 @@
         }
 
         .reset {
+					display: flex;
+					flex-direction: column;
+					text-align: start;
           font-size: small;
           font-weight: lighter;
 
