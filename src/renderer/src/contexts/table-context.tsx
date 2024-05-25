@@ -11,6 +11,9 @@ import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useResetTable } from "../hooks/useResetTable";
 import { useFileSystem } from "../hooks/useFileSystem";
 import { uuidv4 } from "../common/utils";
+import { clearTimeout } from "timers";
+
+type TablesType = Record<string, TableDataType>;
 
 type TableContextType = {
 	tables: Record<string, TableDataType>;
@@ -36,7 +39,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	//TODO: why do I have this hook?
 	const { resetTable: reset } = useResetTable();
 
-	const [tables, setTables] = useState<Record<string, TableDataType>>({});
+	const [tables, setTables] = useState<TablesType>({});
 
 	useEffect(() => {
 		void (async () => {
@@ -48,13 +51,16 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 			setTables(JSON.parse(data));
 		})();
-
-		// setTables(getAll());
 	}, [getAll]);
 
 	// private:
 	const updateState = useCallback(
-		async (tableKey: string, data: TableDataType | null, resetAt: number | null = null) => {
+		async (
+			tableKey: string,
+			data: TableDataType | null,
+			resetAt: number | null = null,
+			isNoLongerNew: boolean = false
+		) => {
 			if (!tables[tableKey]) {
 				console.error(
 					`Cannot update TableContext state. Table with key ${tableKey} was not found!`
@@ -62,7 +68,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 				return;
 			}
 
-			let nextState = {};
+			let nextState: TablesType = {};
 
 			if (!data) {
 				Object.keys(tables)
@@ -72,7 +78,11 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 					});
 			} else {
 				nextState = { ...tables };
-				nextState[tableKey] = { ...data, resetAt };
+				nextState[tableKey] = {
+					...data,
+					resetAt,
+					isNewlyAdded: isNoLongerNew ? false : data.isNewlyAdded
+				};
 			}
 
 			setTables(nextState);
@@ -82,52 +92,68 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 		[getFromStorage, tables]
 	);
 
-	const handleTableResetAtRequestedTime = useCallback(async () => {
-		const now = new Date();
-		const today = now.getDay();
+	const handleTableResetAtRequestedTime = useCallback(
+		async (now: Date) => {
+			for (const tableKey of Object.keys(tables)) {
+				const table = tables[tableKey];
+				// table never resets
+				if (!table.resetAt || table.dayOfReset === "never") {
+					continue;
+				}
 
-		for (const tableKey of Object.keys(tables)) {
-			if (
-				now.getHours() >= tables[tableKey].timeOfReset.hour &&
-				now.getMinutes() >= tables[tableKey].timeOfReset.minute &&
-				((tables[tableKey].resetAt &&
-					new Date(tables[tableKey]?.resetAt ?? "").getDay() !== today) ||
-					!tables[tableKey].resetAt) &&
-				tables[tableKey].dayOfReset !== "never" &&
-				(tables[tableKey].dayOfReset === "always" || tables[tableKey].dayOfReset === today)
-			) {
-				// TODO: implement batchResetTable
-				const clearedTable = reset(tables[tableKey]);
-				await updateState(tableKey, clearedTable, now.getTime());
+				const tableResetAt = new Date(table.resetAt);
+
+				// newly created table
+				if (table.isNewlyAdded && tableResetAt.getDate() === now.getDate()) {
+					continue;
+				}
+
+				const shouldResetToday =
+					tableResetAt.getDate() !== now.getDate() &&
+					(table.dayOfReset === tableResetAt.getDay() || table.dayOfReset === "always");
+
+				if (
+					(shouldResetToday && tableResetAt.getHours() > table.timeOfReset.hour) ||
+					(tableResetAt.getHours() === table.timeOfReset.hour &&
+						tableResetAt.getMinutes() >= table.timeOfReset.minute)
+				) {
+					const clearedTable = reset(tables[tableKey]);
+					await updateState(tableKey, clearedTable, now.getTime(), true);
+				}
 			}
-		}
-	}, [tables, reset, updateState]);
+		},
+		[tables]
+	);
 
 	useEffect(() => {
-		const date = new Date();
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		let interval: any;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		let timeout: any;
+		const now = new Date();
+		const isWholeMinute = now.getSeconds() === 0 || now.getSeconds() === 59;
 
-		// on startup
-		void (async () => {
-			await handleTableResetAtRequestedTime();
+		let timeout: NodeJS.Timeout;
+		let interval: NodeJS.Timeout;
 
-			// eslint-disable-next-line prefer-const
-			timeout = setTimeout(
-				() => {
-					interval = setInterval(async () => {
-						await handleTableResetAtRequestedTime();
-					}, 60_000);
-				},
-				60 - date.getSeconds() * 1000
-			);
-		})();
+		// first run at the start of the app
+		void (async () => await handleTableResetAtRequestedTime(now))();
+
+		if (!isWholeMinute) {
+			const timeoutMs = (60 - now.getSeconds()) * 1000;
+
+			timeout = setTimeout(() => {
+				void (async () => await handleTableResetAtRequestedTime(now))();
+
+				interval = setInterval(() => {
+					void (async () => await handleTableResetAtRequestedTime(now))();
+				}, 60_000);
+			}, timeoutMs);
+		} else {
+			interval = setInterval(() => {
+				void (async () => await handleTableResetAtRequestedTime(now))();
+			}, 60_000);
+		}
 
 		return () => {
-			clearInterval(interval);
 			clearTimeout(timeout);
+			clearInterval(interval);
 		};
 	}, [handleTableResetAtRequestedTime]);
 

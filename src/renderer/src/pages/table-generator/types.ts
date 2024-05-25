@@ -16,6 +16,7 @@ export type RowElementType = ColumnElementType & {
 };
 
 export type TableForm = {
+	isNewlyAdded: boolean;
 	resetAt: number | null;
 	tableName: string;
 	dayOfReset: DayOfResetType;
@@ -38,6 +39,7 @@ export type TableGeneratorProps = {
 };
 
 export const emptyForm: TableForm = {
+	isNewlyAdded: true,
 	resetAt: new Date().getTime(),
 	tableName: "",
 	dayOfReset: DEFAULT_DAY_OF_RESET,

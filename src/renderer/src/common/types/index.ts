@@ -13,6 +13,7 @@ export type ColumnDataType = {
 };
 
 export type TableDataType = {
+	isNewlyAdded: boolean;
 	resetAt: number | null;
 	tableName: string;
 	dayOfReset: DayOfResetType;
