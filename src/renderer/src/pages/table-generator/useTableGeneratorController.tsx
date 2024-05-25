@@ -1,5 +1,5 @@
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { emptyForm, TableForm, TypeOfInput } from "./types";
+import { ColumnElementType, emptyForm, RowElementType, TableForm, TypeOfInput } from "./types";
 import { mapFormDataToTableDataType, mapTableDataTypeToFormData } from "./table-generator-mapper";
 import { Days, DaysSort, DaysSortType, TableDataType } from "../../common/types";
 import { useTableContext } from "../../contexts/table-context";
@@ -7,8 +7,13 @@ import { SelectOptions } from "../../common/components/select/select";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { DEFAULT_TABLE_COLOR } from "../../common/constants";
 
-const DEFAULT_COLUMN = { value: "", color: DEFAULT_TABLE_COLOR };
-const DEFAULT_ROW = { value: "", color: DEFAULT_TABLE_COLOR, availableFor: "" };
+const DEFAULT_COLUMN: ColumnElementType = { value: "", color: DEFAULT_TABLE_COLOR };
+const DEFAULT_ROW: RowElementType = {
+	value: "",
+	color: DEFAULT_TABLE_COLOR,
+	availableFor: "",
+	statuses: []
+};
 
 type UseTableGeneratorControllerProps = {
 	tableKey?: string;

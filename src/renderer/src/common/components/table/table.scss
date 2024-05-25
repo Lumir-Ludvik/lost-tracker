@@ -10,6 +10,7 @@
 
 		td,th {
 			border: 0.13rem solid black;
+			color: hsl(0, 0%, calc((80 - 60) * -100%));
 		}
 
     thead {
@@ -23,6 +24,7 @@
         .name {
           font-weight: bold;
           font-size: larger;
+					color: white;
         }
 
         .reset {
@@ -31,6 +33,7 @@
 					text-align: start;
           font-size: small;
           font-weight: lighter;
+					color: white;
 
           .reset-time {
             font-weight: bold;

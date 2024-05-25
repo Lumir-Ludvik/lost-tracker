@@ -8,7 +8,7 @@ import editIcon from "../../../assets/icons/edit.svg";
 import resetIcon from "../../../assets/icons/reset.svg";
 import { EditTableModal } from "../edit-table-modal/edit-table-modal";
 import { ConfirmModal } from "../confirm-modal/confirm-modal";
-import { generateTimeString } from "../../utils";
+import { generateTimeString, hexToAccessibilityTextHsl } from "../../utils";
 
 type TableProps = {
 	data: TableDataType;
@@ -31,38 +31,47 @@ export const Table = ({ tableKey, data }: TableProps) => {
 
 	const generateColumns = useMemo(
 		() =>
-			data.columns.map((column, columnIndex) => (
-				<th
-					key={`column-${columnIndex}`}
-					style={{
-						backgroundColor: column.color
-					}}
-				>
-					{column.name}
-				</th>
-			)),
+			data.columns.map((column, columnIndex) => {
+				const textColor = hexToAccessibilityTextHsl(column.color ?? "#ffffff");
+
+				return (
+					<th
+						key={`column-${columnIndex}`}
+						style={{
+							backgroundColor: column.color,
+							color: textColor
+						}}
+					>
+						{column.name}
+					</th>
+				);
+			}),
 		[data.columns]
 	);
 
 	const generateRows = useMemo(() => {
-		return data.rows.map((row, rowIndex) => (
-			<tr key={`row-${rowIndex}`}>
-				<td style={{ backgroundColor: row.color }}>{row.name}</td>
-				{row.statuses.map((status, statusIndex) => (
-					<td key={`chkbox-${statusIndex}`} className="un-checked">
-						{row.availableFor.includes(statusIndex) && (
-							<Checkbox
-								color={status ? "success" : "primary"}
-								isSelected={status}
-								onChange={(chkbox) =>
-									handleCheckBoxChange(tableKey, rowIndex, statusIndex, chkbox.target.checked)
-								}
-							/>
-						)}
-					</td>
-				))}
-			</tr>
-		));
+		return data.rows.map((row, rowIndex) => {
+			const textColor = hexToAccessibilityTextHsl(row.color ?? "#ffffff");
+
+			return (
+				<tr key={`row-${rowIndex}`}>
+					<td style={{ backgroundColor: row.color, color: textColor }}>{row.name}</td>
+					{row.statuses.map((status, statusIndex) => (
+						<td key={`chkbox-${statusIndex}`} className="un-checked">
+							{row.availableFor.includes(statusIndex) && (
+								<Checkbox
+									color={status ? "success" : "primary"}
+									isSelected={status}
+									onChange={(chkbox) =>
+										handleCheckBoxChange(tableKey, rowIndex, statusIndex, chkbox.target.checked)
+									}
+								/>
+							)}
+						</td>
+					))}
+				</tr>
+			);
+		});
 	}, [data.rows, data.tableName, handleCheckBoxChange]);
 
 	return (

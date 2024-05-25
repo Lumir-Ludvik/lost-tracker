@@ -13,6 +13,7 @@ export type ColumnElementType = {
 
 export type RowElementType = ColumnElementType & {
 	availableFor: string;
+	statuses: boolean[];
 };
 
 export type TableForm = {
@@ -45,5 +46,5 @@ export const emptyForm: TableForm = {
 	dayOfReset: DEFAULT_DAY_OF_RESET,
 	timeOfReset: DEFAULT_TIME_OF_RESET,
 	columns: [{ value: "", color: DEFAULT_TABLE_COLOR }],
-	rows: [{ value: "", color: DEFAULT_TABLE_COLOR, availableFor: "" }]
+	rows: [{ value: "", color: DEFAULT_TABLE_COLOR, availableFor: "", statuses: [] }]
 };
