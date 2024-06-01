@@ -1,6 +1,6 @@
 .table-generator {
 	display: grid;
-	grid-template-columns: repeat(1 ,minmax(0, 1fr));
+	grid-template-columns: repeat(1 ,minmax(0.5fr, 1fr));
 	row-gap: 1rem;
   width: 574px;
   margin: 2rem auto auto 2rem;
@@ -49,7 +49,7 @@
 
 	.rows-container {
 		display: grid;
-		grid-template-columns: 1fr 0.7fr 1fr;
+		grid-template-columns: 11.7rem 1fr 11.7rem;
 		row-gap: 1rem;
 		column-gap: 1rem;
 		align-items: center;

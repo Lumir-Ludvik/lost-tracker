@@ -60,6 +60,7 @@ export const Table = ({ tableKey, data }: TableProps) => {
 						<td key={`chkbox-${statusIndex}`} className="un-checked">
 							{row.availableFor.includes(statusIndex) && (
 								<Checkbox
+									className="checkbox"
 									color={status ? "success" : "primary"}
 									isSelected={status}
 									onChange={(chkbox) =>

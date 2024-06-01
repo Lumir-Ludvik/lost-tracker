@@ -10,7 +10,7 @@ export const uuidv4 = () =>
 
 // sick code from xenozauros/hex2hsl.js
 export const hexToAccessibilityTextHsl = (hex: string, valuesOnly = false) => {
-	const threshold = 60;
+	const threshold = 50;
 	const [, red, green, blue] = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex) ?? [
 		"#000000",
 		"00",

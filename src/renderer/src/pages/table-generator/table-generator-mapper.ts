@@ -17,9 +17,12 @@ export const mapFormDataToTableDataType = (form: TableForm): TableDataType => {
 						.map((filteredAvailable) => Number(filteredAvailable)) ?? [],
 				name: row.value,
 				statuses:
-					row.statuses.length === numberOfValidColumns
+					numberOfValidColumns === row.statuses.length
 						? row.statuses
-						: new Array(numberOfValidColumns).fill(false),
+						: [
+								...row.statuses,
+								...new Array(numberOfValidColumns - row.statuses.length).fill(false)
+							],
 				color: row.color
 			})),
 		columns: form.columns

@@ -92,7 +92,7 @@ export const TableGenerator = ({
 				/>
 			</div>
 
-			<Accordion defaultExpandedKeys={["1"]} variant="bordered">
+			<Accordion defaultExpandedKeys="all" variant="bordered" selectionMode="multiple">
 				<AccordionItem key="1" title="Columns" className="color-picker-field-container">
 					<div className="columns-container">
 						{columnFields.map((column, columnIndex) => (
@@ -112,7 +112,6 @@ export const TableGenerator = ({
 											label="Column name:"
 											field={field}
 											error={error}
-											value={field.value}
 											onChange={(event) => {
 												handleInputChange(
 													event,
@@ -157,11 +156,7 @@ export const TableGenerator = ({
 						))}
 					</div>
 				</AccordionItem>
-			</Accordion>
-
-			{/*// TODO: fucks with click focus for fields*/}
-			<Accordion defaultExpandedKeys={["1"]} variant="bordered">
-				<AccordionItem key="1" title="Rows" className="color-picker-field-container">
+				<AccordionItem key="2" title="Rows" className="color-picker-field-container">
 					<div className="rows-container">
 						{rowFields.map((row, rowIndex) => (
 							<React.Fragment key={row.id}>
@@ -230,7 +225,7 @@ export const TableGenerator = ({
 											label="Available for columns"
 											field={field}
 											error={error}
-											selectedKeys={field.value}
+											selectedKeys={field.value.split(",")}
 											disabled={availableForColumnsOptions.length === 0}
 											options={availableColumns}
 										/>
@@ -247,7 +242,6 @@ export const TableGenerator = ({
 					<Button color="primary" type="submit">
 						{isEdit ? "Save" : "Create"} table
 					</Button>
-					{/*//TODO: reset doesn't work for dayOfReset*/}
 					<Button color="secondary" type="button" onClick={() => reset()}>
 						Reset form
 					</Button>

@@ -98,23 +98,52 @@ export const useTableGeneratorController = ({
 		[triggerSubmit]
 	);
 
-	useEffect(function applyDataToEditForm() {
-		if (!isEdit && !tableData && !editEffectCheck.current) {
-			editEffectCheck.current = false;
-			return;
-		}
+	const availableForColumnsOptions = useCallback((tableData: TableDataType | null = null) => {
+		// TODO: add debounce
+		const source = tableData ? tableData.columns : getValues("columns");
+		const duplicateMap = {};
 
-		if (editEffectCheck.current) {
-			return;
-		}
+		const res = source
+			.map((column, index) => {
+				if (duplicateMap[column.value]) {
+					return {
+						label: `${column.value} (${index + 1})`,
+						value: index
+					};
+				}
 
-		setIsEdit(!!tableData);
-		reset(mapTableDataTypeToFormData(tableData!));
-		appendColumn(DEFAULT_COLUMN, { shouldFocus: false });
-		appendRow(DEFAULT_ROW, { shouldFocus: false });
-		availableForColumnsOptions();
-		editEffectCheck.current = true;
+				duplicateMap[column.value] = index;
+
+				return {
+					label: column.value,
+					value: index
+				};
+			})
+			.filter((option) => option.label !== "");
+
+		setAvailableColumns(res);
 	}, []);
+
+	useEffect(
+		function applyDataToEditForm() {
+			if (!isEdit && !tableData && !editEffectCheck.current) {
+				editEffectCheck.current = false;
+				return;
+			}
+
+			if (editEffectCheck.current) {
+				return;
+			}
+
+			setIsEdit(!!tableData);
+			availableForColumnsOptions(tableData);
+			reset(mapTableDataTypeToFormData(tableData!));
+			appendColumn(DEFAULT_COLUMN, { shouldFocus: false });
+			appendRow(DEFAULT_ROW, { shouldFocus: false });
+			editEffectCheck.current = true;
+		},
+		[availableForColumnsOptions, editEffectCheck, tableData, isEdit]
+	);
 
 	const createTable = useCallback(
 		async (data: TableForm) => {
@@ -124,18 +153,6 @@ export const useTableGeneratorController = ({
 		},
 		[reset, saveTable, isEdit]
 	);
-
-	const availableForColumnsOptions = useCallback(() => {
-		// TODO: add debounce
-		const res = getValues("columns")
-			.map((column, index) => ({
-				label: column.value,
-				value: index
-			}))
-			.filter((option) => option.label !== "");
-
-		setAvailableColumns(res);
-	}, []);
 
 	const handleInputChange = useCallback(
 		(

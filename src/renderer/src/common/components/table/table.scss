@@ -67,12 +67,20 @@
     gap: 0.5rem;
     justify-content: flex-start;
   }
+
+	.checkbox {
+		span {
+			margin: 0;
+		}
+	}
+
+	.checked {
+		background-color: green;
+	}
+
+	.un-checked {
+		background-color: #0b98a8;
+	}
 }
 
-.checked {
-  background-color: green;
-}
 
-.un-checked {
-  background-color: #0b98a8;
-}
