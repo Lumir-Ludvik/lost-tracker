@@ -38,6 +38,7 @@
 
 
 	 .columns-container {
+		 margin-top: 1rem;
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		row-gap: 1rem;
@@ -48,6 +49,7 @@
 	}
 
 	.rows-container {
+		margin-top: 1rem;
 		display: grid;
 		grid-template-columns: 11.7rem 1fr 11.7rem;
 		row-gap: 1rem;
