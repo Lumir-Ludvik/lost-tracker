@@ -1,5 +1,5 @@
 import { TableDataType } from "../../common/types";
-import { TableForm } from "./types";
+import { RowElementType, TableForm } from "./types";
 
 export const mapFormDataToTableDataType = (form: TableForm): TableDataType => {
 	const numberOfValidColumns = form.columns.filter((column) => column.value !== "").length;
@@ -16,13 +16,7 @@ export const mapFormDataToTableDataType = (form: TableForm): TableDataType => {
 						.filter((parsedAvailable) => parsedAvailable)
 						.map((filteredAvailable) => Number(filteredAvailable)) ?? [],
 				name: row.value,
-				statuses:
-					numberOfValidColumns === row.statuses.length
-						? row.statuses
-						: [
-								...row.statuses,
-								...new Array(numberOfValidColumns - row.statuses.length).fill(false)
-							],
+				statuses: calculateStatuses(row, numberOfValidColumns),
 				color: row.color
 			})),
 		columns: form.columns
@@ -50,3 +44,24 @@ export const mapTableDataTypeToFormData = (tableData: TableDataType): TableForm 
 		statuses: row.statuses
 	}))
 });
+
+const calculateStatuses = (row: RowElementType, numberOfValidColumns: number): boolean[] => {
+	let statuses = row.statuses;
+
+	if (numberOfValidColumns === statuses.length) {
+		return statuses;
+	}
+
+	if (numberOfValidColumns > statuses.length) {
+		statuses = [
+			...row.statuses,
+			...new Array(numberOfValidColumns - row.statuses.length).fill(false)
+		];
+	}
+
+	if (statuses.length > numberOfValidColumns) {
+		statuses = statuses.splice(0, numberOfValidColumns);
+	}
+
+	return statuses;
+};

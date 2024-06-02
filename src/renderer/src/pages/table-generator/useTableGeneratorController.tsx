@@ -36,6 +36,7 @@ export const useTableGeneratorController = ({
 }: UseTableGeneratorControllerProps) => {
 	const { saveTable } = useTableContext();
 	const editEffectCheck = useRef(false);
+	const tableSavedCheck = useRef(false);
 
 	const [isEdit, setIsEdit] = useState(false);
 	const [colorPickerState, setColorPickerState] = useState<Record<string, boolean>>({});
@@ -75,7 +76,21 @@ export const useTableGeneratorController = ({
 			appendRow(DEFAULT_ROW, { shouldFocus: false });
 			triggerResetCallback?.(false);
 		},
-		[triggerReset]
+		[appendColumn, appendRow, reset, triggerReset, triggerResetCallback]
+	);
+
+	const createTable = useCallback(
+		async (data: TableForm) => {
+			if (tableSavedCheck.current) {
+				return;
+			}
+
+			await saveTable(mapFormDataToTableDataType(data), isEdit ? tableKey : null);
+			reset();
+			onSubmitCallback?.();
+			tableSavedCheck.current = true;
+		},
+		[saveTable, isEdit, tableKey, reset, onSubmitCallback]
 	);
 
 	useEffect(
@@ -95,34 +110,37 @@ export const useTableGeneratorController = ({
 				triggerSubmitCallback?.(false);
 			})();
 		},
-		[triggerSubmit]
+		[createTable, handleSubmit, trigger, triggerSubmit, triggerSubmitCallback]
 	);
 
-	const availableForColumnsOptions = useCallback((tableData: TableDataType | null = null) => {
-		// TODO: add debounce
-		const source = tableData ? tableData.columns : getValues("columns");
-		const duplicateMap = {};
+	const availableForColumnsOptions = useCallback(
+		(tableData: TableDataType | null = null) => {
+			// TODO: add debounce
+			const source = tableData ? tableData.columns : getValues("columns");
+			const duplicateMap = {};
 
-		const res = source
-			.map((column, index) => {
-				if (duplicateMap[column.value]) {
+			const res = source
+				.map((column, index: number) => {
+					if (duplicateMap[column.value]) {
+						return {
+							label: `${column.value} (${index + 1})`,
+							value: index
+						};
+					}
+
+					duplicateMap[column.value] = index;
+
 					return {
-						label: `${column.value} (${index + 1})`,
+						label: column.value,
 						value: index
 					};
-				}
+				})
+				.filter((option) => option.label !== "");
 
-				duplicateMap[column.value] = index;
-
-				return {
-					label: column.value,
-					value: index
-				};
-			})
-			.filter((option) => option.label !== "");
-
-		setAvailableColumns(res);
-	}, []);
+			setAvailableColumns(res);
+		},
+		[getValues]
+	);
 
 	useEffect(
 		function applyDataToEditForm() {
@@ -142,16 +160,7 @@ export const useTableGeneratorController = ({
 			appendRow(DEFAULT_ROW, { shouldFocus: false });
 			editEffectCheck.current = true;
 		},
-		[availableForColumnsOptions, editEffectCheck, tableData, isEdit]
-	);
-
-	const createTable = useCallback(
-		async (data: TableForm) => {
-			await saveTable(mapFormDataToTableDataType(data), isEdit ? tableKey : null);
-			reset();
-			onSubmitCallback?.();
-		},
-		[reset, saveTable, isEdit]
+		[availableForColumnsOptions, editEffectCheck, tableData, isEdit, reset, appendColumn, appendRow]
 	);
 
 	const handleInputChange = useCallback(
