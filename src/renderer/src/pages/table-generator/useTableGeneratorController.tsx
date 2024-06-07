@@ -216,7 +216,7 @@ export const useTableGeneratorController = ({
 			...Object.keys(Days)
 				.filter((key) => isNaN(Number(key)))
 				.sort((a, b) => DaysSort.indexOf(a as DaysSortType) - DaysSort.indexOf(b as DaysSortType))
-				.map((day) => ({ value: day, label: day }))
+				.map((day) => ({ value: Days[day], label: day }))
 		],
 		[]
 	);

@@ -7,7 +7,6 @@ import {
 	useState
 } from "react";
 import { TableDataType } from "../common/types";
-import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useResetTable } from "../hooks/useResetTable";
 import { useFileSystem } from "../hooks/useFileSystem";
 import { uuidv4 } from "../common/utils";
@@ -35,7 +34,6 @@ const TableContext = createContext<TableContextType>({
 
 export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	const { writeToFileAsync, readFileAsync } = useFileSystem();
-	const { getAll, removeFromStorage, saveToStorage, getFromStorage } = useLocalStorage();
 	//TODO: why do I have this hook?
 	const { resetTable: reset } = useResetTable();
 
@@ -51,7 +49,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 			setTables(JSON.parse(data));
 		})();
-	}, [getAll]);
+	}, []);
 
 	// private:
 	const updateState = useCallback(
@@ -86,10 +84,9 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 			}
 
 			setTables(nextState);
-			//TODO: implement update to file
 			await writeToFileAsync(JSON.stringify(nextState));
 		},
-		[getFromStorage, tables]
+		[tables, writeToFileAsync]
 	);
 
 	const handleTableResetAtRequestedTime = useCallback(
@@ -104,25 +101,38 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 				const tableResetAt = new Date(table.resetAt);
 
 				// newly created table
-				if (table.isNewlyAdded && tableResetAt.getDate() === now.getDate()) {
+				if (
+					table.isNewlyAdded &&
+					tableResetAt.getDate() === now.getDate() &&
+					tableResetAt.getMonth() === now.getMonth()
+				) {
 					continue;
 				}
 
 				const shouldResetToday =
-					tableResetAt.getDate() !== now.getDate() &&
-					(table.dayOfReset === tableResetAt.getDay() || table.dayOfReset === "always");
+					(tableResetAt.getDate() !== now.getDate() ||
+						(tableResetAt.getDate() === now.getDate() &&
+							tableResetAt.getMonth() != now.getMonth())) &&
+					// "5" == 5
+					(table.dayOfReset == now.getDay() || table.dayOfReset === "always");
 
 				if (
 					(shouldResetToday && tableResetAt.getHours() > table.timeOfReset.hour) ||
 					(tableResetAt.getHours() === table.timeOfReset.hour &&
 						tableResetAt.getMinutes() >= table.timeOfReset.minute)
 				) {
+					if (tables[tableKey].tableName === "Daily ") {
+						console.log("UFO Reset!", tables[tableKey]);
+						console.log("UFO Reset! time now", now);
+						console.log("UFO Reset! time in table", tableResetAt);
+						console.log("UFO Reset! shouldResetToday", shouldResetToday);
+					}
 					const clearedTable = reset(tables[tableKey]);
 					await updateState(tableKey, clearedTable, now.getTime(), true);
 				}
 			}
 		},
-		[tables]
+		[reset, tables, updateState]
 	);
 
 	useEffect(() => {
@@ -157,35 +167,20 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 		};
 	}, [handleTableResetAtRequestedTime]);
 
-	const removeFromState = useCallback(
-		(removeKey: string) => {
-			const nextTables = {};
-
-			Object.keys(tables)
-				.filter((tableKey) => tableKey !== removeKey)
-				.forEach((key) => {
-					nextTables[key] = tables[key];
-				});
-
-			setTables(nextTables);
-		},
-		[tables]
-	);
-
 	// public:
 	const resetTable = useCallback(
 		async (tableKey: string) => {
 			const clearedTable = reset(tables[tableKey]);
 			await updateState(tableKey, clearedTable, new Date().getTime());
 		},
-		[reset, updateState]
+		[reset, tables, updateState]
 	);
 
 	const deleteTable = useCallback(
 		async (tableKey: string) => {
 			await updateState(tableKey, null);
 		},
-		[removeFromStorage, removeFromState]
+		[updateState]
 	);
 
 	const saveTable = useCallback(
@@ -208,7 +203,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 				setTables(nextTables);
 			})();
 		},
-		[saveToStorage, updateState]
+		[tables, writeToFileAsync]
 	);
 
 	const handleCheckBoxChange = useCallback(
@@ -226,7 +221,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 			setTables(nextState);
 			await writeToFileAsync(JSON.stringify(nextState));
 		},
-		[saveToStorage, tables]
+		[tables, writeToFileAsync]
 	);
 
 	return (
