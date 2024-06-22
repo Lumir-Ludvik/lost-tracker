@@ -7,6 +7,13 @@ export const TableView = () => {
 	const { tables } = useTableContext();
 
 	const { length, keys } = useMemo(() => {
+		if (!tables) {
+			return {
+				length: 0,
+				keys: []
+			};
+		}
+
 		return {
 			length: Object.keys(tables).length,
 			keys: Object.keys(tables)
@@ -15,7 +22,8 @@ export const TableView = () => {
 
 	return (
 		<div className="table-view">
-			{length > 0 &&
+			{tables &&
+				length > 0 &&
 				keys.map((tableKey) => (
 					<Table key={tableKey} tableKey={tableKey} data={tables[tableKey]} />
 				))}

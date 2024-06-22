@@ -6,16 +6,15 @@ import {
 	useEffect,
 	useState
 } from "react";
-import { TableDataType } from "../common/types";
+import { TableDataType, TablesType } from "../common/types";
 import { useResetTable } from "../hooks/useResetTable";
 import { useFileSystem } from "../hooks/useFileSystem";
 import { uuidv4 } from "../common/utils";
 import { clearTimeout } from "timers";
-
-type TablesType = Record<string, TableDataType>;
+import { useLocation } from "react-router";
 
 type TableContextType = {
-	tables: Record<string, TableDataType>;
+	tables: TablesType | null;
 	resetTable: (tableName: string) => Promise<void>;
 	deleteTable: (tableName: string) => void;
 	saveTable: (data: TableDataType, tableKey?: string | null) => Promise<void>;
@@ -34,63 +33,101 @@ const TableContext = createContext<TableContextType>({
 
 export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	const { writeToFileAsync, readFileAsync } = useFileSystem();
+	const location = useLocation();
 	//TODO: why do I have this hook?
 	const { resetTable: reset } = useResetTable();
 
-	const [tables, setTables] = useState<TablesType>({});
+	const [localTables, setLocalTables] = useState<TablesType | null>(null);
 
-	useEffect(() => {
-		void (async () => {
-			const data = await readFileAsync();
-			if (!data) {
-				// TODO: toast
-				return;
-			}
+	const getTablesFromFile = useCallback(async (): Promise<TablesType | null> => {
+		const data = await readFileAsync();
 
-			setTables(JSON.parse(data));
-		})();
-	}, []);
+		if (!data) {
+			// TODO: toast
+			console.warn("Cannot read tables. File is missing!");
+			return null;
+		}
+
+		return JSON.parse(data);
+	}, [readFileAsync]);
 
 	// private:
+	useEffect(
+		function refreshOnLocationChange() {
+			void (async () => {
+				const tables = await getTablesFromFile();
+
+				if (!tables) {
+					return;
+				}
+
+				setLocalTables(tables);
+			})();
+		},
+		[getTablesFromFile, location]
+	);
+
 	const updateState = useCallback(
+		async (nextState: TablesType) => {
+			const res = await writeToFileAsync(JSON.stringify(nextState));
+
+			if (res) {
+				setLocalTables(nextState);
+			}
+
+			return res;
+		},
+		[writeToFileAsync]
+	);
+
+	const updateTablesFile = useCallback(
 		async (
 			tableKey: string,
-			data: TableDataType | null,
+			data: TableDataType,
 			resetAt: number | null = null,
 			isNoLongerNew: boolean = false
 		) => {
-			if (!tables[tableKey]) {
-				console.error(
-					`Cannot update TableContext state. Table with key ${tableKey} was not found!`
-				);
+			const nextTables: TablesType | null = await getTablesFromFile();
+
+			if (!nextTables) {
+				console.error(`Cannot update TableContext state. Tables.txt is missing!`);
+				alert(`Cannot update TableContext state. Tables.txt is missing!`);
 				return;
 			}
 
-			let nextState: TablesType = {};
+			nextTables[tableKey] = {
+				...data,
+				resetAt,
+				isNewlyAdded: isNoLongerNew ? false : data.isNewlyAdded
+			};
 
-			if (!data) {
-				Object.keys(tables)
-					.filter((key) => key !== tableKey)
-					.forEach((key) => {
-						nextState[key] = tables[key];
-					});
-			} else {
-				nextState = { ...tables };
-				nextState[tableKey] = {
-					...data,
-					resetAt,
-					isNewlyAdded: isNoLongerNew ? false : data.isNewlyAdded
-				};
+			const res = await updateState(nextTables);
+			if (!res) {
+				console.error(`Cannot update table with key: ${tableKey}. Writing to tables.txt failed!`);
+				alert(`Cannot update table with key: ${tableKey}. Writing to tables.txt failed!`);
 			}
-
-			setTables(nextState);
-			await writeToFileAsync(JSON.stringify(nextState));
 		},
-		[tables, writeToFileAsync]
+		[getTablesFromFile, updateState]
 	);
 
 	const handleTableResetAtRequestedTime = useCallback(
 		async (now: Date) => {
+			// empty state
+			if (!localTables) {
+				return;
+			}
+
+			// this is safer but really stupid
+			// const tables = await getTablesFromFile();
+
+			const tables = localTables;
+
+			if (!tables) {
+				console.error("Failed to reset table. Tables.txt is missing!");
+				alert("Failed to reset table. Tables.txt is missing!");
+				return;
+			}
+
 			for (const tableKey of Object.keys(tables)) {
 				const table = tables[tableKey];
 				// table never resets
@@ -128,11 +165,11 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 						console.log("UFO Reset! shouldResetToday", shouldResetToday);
 					}
 					const clearedTable = reset(tables[tableKey]);
-					await updateState(tableKey, clearedTable, now.getTime(), true);
+					await updateTablesFile(tableKey, clearedTable, now.getTime(), true);
 				}
 			}
 		},
-		[reset, tables, updateState]
+		[localTables, reset, updateTablesFile]
 	);
 
 	useEffect(() => {
@@ -170,23 +207,52 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	// public:
 	const resetTable = useCallback(
 		async (tableKey: string) => {
+			const tables = await getTablesFromFile();
+
+			if (!tables) {
+				console.error("Cannot reset table. Tables.txt is missing!");
+				alert("Cannot reset table. Tables.txt is missing!");
+				return;
+			}
+
 			const clearedTable = reset(tables[tableKey]);
-			await updateState(tableKey, clearedTable, new Date().getTime());
+			await updateTablesFile(tableKey, clearedTable, new Date().getTime());
 		},
-		[reset, tables, updateState]
+		[getTablesFromFile, reset, updateTablesFile]
 	);
 
 	const deleteTable = useCallback(
 		async (tableKey: string) => {
-			await updateState(tableKey, null);
+			const tables = await getTablesFromFile();
+
+			if (!tables) {
+				console.error("Cannot delete table. Tables.txt is missing!");
+				alert("Cannot delete table. Tables.txt is missing!");
+				return;
+			}
+
+			const nextTables: TablesType = {};
+
+			Object.keys(tables)
+				.filter((key) => key !== tableKey)
+				.map((key) => {
+					nextTables[key] = tables[key];
+				});
+
+			const res = await updateState(nextTables);
+
+			if (!res) {
+				console.error("Cannot delete table. Writing to tables.txt failed!");
+				alert("Cannot delete table. Writing to tables.txt failed!");
+			}
 		},
-		[updateState]
+		[getTablesFromFile, updateState]
 	);
 
 	const saveTable = useCallback(
 		async (data: TableDataType, tableKey: string | null = null) => {
 			void (async () => {
-				let nextTables = { ...tables };
+				let nextTables = (await getTablesFromFile()) ?? {};
 
 				if (tableKey) {
 					nextTables[tableKey] = data;
@@ -195,19 +261,26 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 					nextTables = { ...nextTables, [newKey]: data };
 				}
 
-				const res = await writeToFileAsync(JSON.stringify(nextTables));
+				const res = await updateState(nextTables);
 				if (!res) {
 					// TODO: add error toast for user
+					console.error("Failed to save table data! Please try again.");
+					alert("Failed to save table data! Please try again.");
 				}
-
-				setTables(nextTables);
 			})();
 		},
-		[tables, writeToFileAsync]
+		[getTablesFromFile, updateState]
 	);
 
 	const handleCheckBoxChange = useCallback(
 		async (tableKey: string, rowIndex: number, statusIndex: number, change: boolean) => {
+			const tables = await getTablesFromFile();
+
+			if (!tables) {
+				alert("Cannot toggle checkbox because tables.txt is missing!");
+				return;
+			}
+
 			if (!tables[tableKey]) {
 				console.error(
 					`Cannot update state of table with key ${tableKey} because no such table exists in TableContext`
@@ -218,16 +291,24 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 			const nextState = { ...tables };
 			nextState[tableKey].rows[rowIndex].statuses[statusIndex] = change;
 
-			setTables(nextState);
-			await writeToFileAsync(JSON.stringify(nextState));
+			const res = await updateState(nextState);
+
+			if (!res) {
+				console.error(
+					`Cannot toggle checkbox for table with key: ${tableKey}. Writing to tables.txt failed!`
+				);
+				alert(
+					`Cannot toggle checkbox for table with key: ${tableKey}. Writing to tables.txt failed!`
+				);
+			}
 		},
-		[tables, writeToFileAsync]
+		[getTablesFromFile, updateState]
 	);
 
 	return (
 		<TableContext.Provider
 			value={{
-				tables,
+				tables: localTables,
 				resetTable,
 				deleteTable,
 				saveTable,

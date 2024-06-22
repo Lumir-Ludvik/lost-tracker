@@ -49,3 +49,5 @@ export type TimeTableType = {
 	tableKey: string;
 	dayOfReset: DayOfResetType;
 };
+
+export type TablesType = Record<string, TableDataType>;

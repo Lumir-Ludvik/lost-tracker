@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { TableDataType } from "../../types";
+import { Days, TableDataType } from "../../types";
 import "./table.scss";
 import { Button, Checkbox, Image, useDisclosure } from "@nextui-org/react";
 import { useTableContext } from "../../../contexts/table-context";
@@ -86,7 +86,7 @@ export const Table = ({ tableKey, data }: TableProps) => {
 									<span className="name">{data.tableName}</span>
 									<div className="reset">
 										<span>
-											Resets on: <span className="reset-time">{data.dayOfReset}</span>
+											Resets on: <span className="reset-time">{Days[data.dayOfReset]}</span>
 										</span>
 										{data.dayOfReset !== "never" && (
 											<span>
