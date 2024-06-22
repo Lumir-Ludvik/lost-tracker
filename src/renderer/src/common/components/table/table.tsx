@@ -73,7 +73,7 @@ export const Table = ({ tableKey, data }: TableProps) => {
 				</tr>
 			);
 		});
-	}, [data.rows, data.tableName, handleCheckBoxChange]);
+	}, [data.rows, handleCheckBoxChange, tableKey]);
 
 	return (
 		<>
@@ -86,7 +86,10 @@ export const Table = ({ tableKey, data }: TableProps) => {
 									<span className="name">{data.tableName}</span>
 									<div className="reset">
 										<span>
-											Resets on: <span className="reset-time">{Days[data.dayOfReset]}</span>
+											Resets on:{" "}
+											<span className="reset-time">
+												{isNaN(Number(data.dayOfReset)) ? data.dayOfReset : Days[data.dayOfReset]}
+											</span>
 										</span>
 										{data.dayOfReset !== "never" && (
 											<span>

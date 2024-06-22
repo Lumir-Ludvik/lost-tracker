@@ -43,7 +43,7 @@ export enum Days {
 	Saturday
 }
 
-export type DayOfResetType = Days | "always" | "never";
+export type DayOfResetType = number | "always" | "never";
 
 export type TimeTableType = {
 	tableKey: string;

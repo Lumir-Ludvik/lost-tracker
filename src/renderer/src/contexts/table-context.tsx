@@ -110,67 +110,63 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 		[getTablesFromFile, updateState]
 	);
 
-	const handleTableResetAtRequestedTime = useCallback(
-		async (now: Date) => {
-			// empty state
-			if (!localTables) {
-				return;
+	const handleTableResetAtRequestedTime = useCallback(async () => {
+		const tables = await getTablesFromFile();
+		const now = new Date();
+
+		// empty state
+		if (!tables && !localTables) {
+			return;
+		}
+
+		if (!tables) {
+			console.error("Failed to reset table. Tables.txt is missing!");
+			alert("Failed to reset table. Tables.txt is missing!");
+			return;
+		}
+
+		for (const tableKey of Object.keys(tables)) {
+			const table = tables[tableKey];
+			// table never resets
+			if (!table.resetAt || table.dayOfReset === "never") {
+				continue;
 			}
 
-			// this is safer but really stupid
-			// const tables = await getTablesFromFile();
+			const tableResetAt = new Date(table.resetAt);
 
-			const tables = localTables;
-
-			if (!tables) {
-				console.error("Failed to reset table. Tables.txt is missing!");
-				alert("Failed to reset table. Tables.txt is missing!");
-				return;
+			// newly created table
+			if (
+				table.isNewlyAdded &&
+				tableResetAt.getDate() === now.getDate() &&
+				tableResetAt.getMonth() === now.getMonth()
+			) {
+				continue;
 			}
 
-			for (const tableKey of Object.keys(tables)) {
-				const table = tables[tableKey];
-				// table never resets
-				if (!table.resetAt || table.dayOfReset === "never") {
-					continue;
+			const shouldResetToday =
+				(tableResetAt.getDate() !== now.getDate() ||
+					(tableResetAt.getDate() === now.getDate() &&
+						tableResetAt.getMonth() != now.getMonth())) &&
+				// "5" == 5
+				(table.dayOfReset == now.getDay() || table.dayOfReset === "always");
+
+			if (
+				shouldResetToday &&
+				(now.getHours() > table.timeOfReset.hour ||
+					(now.getHours() === table.timeOfReset.hour &&
+						now.getMinutes() >= table.timeOfReset.minute))
+			) {
+				if (tables[tableKey].tableName === "Daily ") {
+					console.log("UFO Reset!", tables[tableKey]);
+					console.log("UFO Reset! time now", now);
+					console.log("UFO Reset! time in table", tableResetAt);
+					console.log("UFO Reset! shouldResetToday", shouldResetToday);
 				}
-
-				const tableResetAt = new Date(table.resetAt);
-
-				// newly created table
-				if (
-					table.isNewlyAdded &&
-					tableResetAt.getDate() === now.getDate() &&
-					tableResetAt.getMonth() === now.getMonth()
-				) {
-					continue;
-				}
-
-				const shouldResetToday =
-					(tableResetAt.getDate() !== now.getDate() ||
-						(tableResetAt.getDate() === now.getDate() &&
-							tableResetAt.getMonth() != now.getMonth())) &&
-					// "5" == 5
-					(table.dayOfReset == now.getDay() || table.dayOfReset === "always");
-
-				if (
-					(shouldResetToday && tableResetAt.getHours() > table.timeOfReset.hour) ||
-					(tableResetAt.getHours() === table.timeOfReset.hour &&
-						tableResetAt.getMinutes() >= table.timeOfReset.minute)
-				) {
-					if (tables[tableKey].tableName === "Daily ") {
-						console.log("UFO Reset!", tables[tableKey]);
-						console.log("UFO Reset! time now", now);
-						console.log("UFO Reset! time in table", tableResetAt);
-						console.log("UFO Reset! shouldResetToday", shouldResetToday);
-					}
-					const clearedTable = reset(tables[tableKey]);
-					await updateTablesFile(tableKey, clearedTable, now.getTime(), true);
-				}
+				const clearedTable = reset(tables[tableKey]);
+				await updateTablesFile(tableKey, clearedTable, new Date().getTime(), true);
 			}
-		},
-		[localTables, reset, updateTablesFile]
-	);
+		}
+	}, [getTablesFromFile, localTables, reset, updateTablesFile]);
 
 	useEffect(() => {
 		const now = new Date();
@@ -180,21 +176,21 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 		let interval: NodeJS.Timeout;
 
 		// first run at the start of the app
-		void (async () => await handleTableResetAtRequestedTime(now))();
+		void (async () => await handleTableResetAtRequestedTime())();
 
 		if (!isWholeMinute) {
 			const timeoutMs = (60 - now.getSeconds()) * 1000;
 
 			timeout = setTimeout(() => {
-				void (async () => await handleTableResetAtRequestedTime(now))();
+				void (async () => await handleTableResetAtRequestedTime())();
 
 				interval = setInterval(() => {
-					void (async () => await handleTableResetAtRequestedTime(now))();
+					void (async () => await handleTableResetAtRequestedTime())();
 				}, 60_000);
 			}, timeoutMs);
 		} else {
 			interval = setInterval(() => {
-				void (async () => await handleTableResetAtRequestedTime(now))();
+				void (async () => await handleTableResetAtRequestedTime())();
 			}, 60_000);
 		}
 
