@@ -4,6 +4,7 @@ import {
 	useCallback,
 	useContext,
 	useEffect,
+	useRef,
 	useState
 } from "react";
 import { TableDataType, TablesType } from "../common/types";
@@ -38,6 +39,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	const { resetTable: reset } = useResetTable();
 
 	const [localTables, setLocalTables] = useState<TablesType | null>(null);
+	const intervalsCreated = useRef(false);
 
 	const getTablesFromFile = useCallback(async (): Promise<TablesType | null> => {
 		const data = await readFileAsync();
@@ -111,6 +113,8 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	);
 
 	const handleTableResetAtRequestedTime = useCallback(async () => {
+		const SEVEN_DAYS_IN_MS = 604_800_000;
+
 		const tables = await getTablesFromFile();
 		const now = new Date();
 
@@ -121,7 +125,6 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 		if (!tables) {
 			console.error("Failed to reset table. Tables.txt is missing!");
-			alert("Failed to reset table. Tables.txt is missing!");
 			return;
 		}
 
@@ -143,32 +146,45 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 				continue;
 			}
 
-			const shouldResetToday =
-				(tableResetAt.getDate() !== now.getDate() ||
-					(tableResetAt.getDate() === now.getDate() &&
-						tableResetAt.getMonth() != now.getMonth())) &&
-				// "5" == 5
-				(table.dayOfReset == now.getDay() || table.dayOfReset === "always");
+			const lastResetWasWeekOrMoreAgo = now.getTime() >= tableResetAt.getTime() + SEVEN_DAYS_IN_MS;
 
-			if (
-				shouldResetToday &&
-				(now.getHours() > table.timeOfReset.hour ||
-					(now.getHours() === table.timeOfReset.hour &&
-						now.getMinutes() >= table.timeOfReset.minute))
-			) {
-				if (tables[tableKey].tableName === "Daily ") {
-					console.log("UFO Reset!", tables[tableKey]);
-					console.log("UFO Reset! time now", now);
-					console.log("UFO Reset! time in table", tableResetAt);
-					console.log("UFO Reset! shouldResetToday", shouldResetToday);
-				}
+			const monthsAreDifferentButTheDayIsTheSame =
+				tableResetAt.getDate() === now.getDate() && tableResetAt.getMonth() != now.getMonth();
+
+			const isTableResetDayTodayOrAlways =
+				table.dayOfReset === now.getDay().toString() || table.dayOfReset === "always";
+
+			const shouldResetToday =
+				(tableResetAt.getDate() !== now.getDate() || monthsAreDifferentButTheDayIsTheSame) &&
+				isTableResetDayTodayOrAlways;
+
+			const isItTimeDoctorFreeman =
+				now.getHours() > table.timeOfReset.hour ||
+				(now.getHours() === table.timeOfReset.hour && now.getMinutes() >= table.timeOfReset.minute);
+
+			if ((shouldResetToday || lastResetWasWeekOrMoreAgo) && isItTimeDoctorFreeman) {
 				const clearedTable = reset(tables[tableKey]);
 				await updateTablesFile(tableKey, clearedTable, new Date().getTime(), true);
 			}
 		}
 	}, [getTablesFromFile, localTables, reset, updateTablesFile]);
 
+	const createTableResetInterval = useCallback(
+		() =>
+			setInterval(() => {
+				void (async () => await handleTableResetAtRequestedTime())();
+			}, 60_000),
+		[handleTableResetAtRequestedTime]
+	);
+
 	useEffect(() => {
+		// TODO: this is still being called 3x
+		if (intervalsCreated.current) {
+			return;
+		}
+
+		intervalsCreated.current = true;
+
 		const now = new Date();
 		const isWholeMinute = now.getSeconds() === 0 || now.getSeconds() === 59;
 
@@ -184,21 +200,18 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 			timeout = setTimeout(() => {
 				void (async () => await handleTableResetAtRequestedTime())();
 
-				interval = setInterval(() => {
-					void (async () => await handleTableResetAtRequestedTime())();
-				}, 60_000);
+				interval = createTableResetInterval();
 			}, timeoutMs);
 		} else {
-			interval = setInterval(() => {
-				void (async () => await handleTableResetAtRequestedTime())();
-			}, 60_000);
+			interval = createTableResetInterval();
 		}
 
 		return () => {
+			intervalsCreated.current = false;
 			clearTimeout(timeout);
 			clearInterval(interval);
 		};
-	}, [handleTableResetAtRequestedTime]);
+	}, [createTableResetInterval, handleTableResetAtRequestedTime]);
 
 	// public:
 	const resetTable = useCallback(
@@ -207,7 +220,6 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 			if (!tables) {
 				console.error("Cannot reset table. Tables.txt is missing!");
-				alert("Cannot reset table. Tables.txt is missing!");
 				return;
 			}
 
@@ -223,7 +235,6 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 			if (!tables) {
 				console.error("Cannot delete table. Tables.txt is missing!");
-				alert("Cannot delete table. Tables.txt is missing!");
 				return;
 			}
 
@@ -239,7 +250,6 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 			if (!res) {
 				console.error("Cannot delete table. Writing to tables.txt failed!");
-				alert("Cannot delete table. Writing to tables.txt failed!");
 			}
 		},
 		[getTablesFromFile, updateState]
@@ -261,7 +271,6 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 				if (!res) {
 					// TODO: add error toast for user
 					console.error("Failed to save table data! Please try again.");
-					alert("Failed to save table data! Please try again.");
 				}
 			})();
 		},
@@ -273,7 +282,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 			const tables = await getTablesFromFile();
 
 			if (!tables) {
-				alert("Cannot toggle checkbox because tables.txt is missing!");
+				console.error("Cannot toggle checkbox because tables.txt is missing!");
 				return;
 			}
 
@@ -291,9 +300,6 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 			if (!res) {
 				console.error(
-					`Cannot toggle checkbox for table with key: ${tableKey}. Writing to tables.txt failed!`
-				);
-				alert(
 					`Cannot toggle checkbox for table with key: ${tableKey}. Writing to tables.txt failed!`
 				);
 			}
