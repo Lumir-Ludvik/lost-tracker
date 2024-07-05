@@ -93,7 +93,6 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 			if (!nextTables) {
 				console.error(`Cannot update TableContext state. Tables.txt is missing!`);
-				alert(`Cannot update TableContext state. Tables.txt is missing!`);
 				return;
 			}
 
@@ -106,7 +105,6 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 			const res = await updateState(nextTables);
 			if (!res) {
 				console.error(`Cannot update table with key: ${tableKey}. Writing to tables.txt failed!`);
-				alert(`Cannot update table with key: ${tableKey}. Writing to tables.txt failed!`);
 			}
 		},
 		[getTablesFromFile, updateState]
