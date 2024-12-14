@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Days, TableDataType } from "../../types";
 import "./table.scss";
 import { Button, Checkbox, Image, useDisclosure } from "@nextui-org/react";
-import { useTableContext } from "../../../contexts/table-context";
+import { useFileDataContext } from "../../../contexts/table-context";
 import deleteIcon from "../../../assets/icons/delete.svg";
 import editIcon from "../../../assets/icons/edit.svg";
 import resetIcon from "../../../assets/icons/reset.svg";
@@ -13,6 +13,7 @@ import { generateTimeString, hexToAccessibilityTextHsl } from "../../utils";
 type TableProps = {
 	data: TableDataType;
 	tableKey: string;
+	tabKey: string;
 };
 
 type ConfirmModalType = {
@@ -20,9 +21,9 @@ type ConfirmModalType = {
 	action: "reset" | "delete" | "none";
 };
 
-export const Table = ({ tableKey, data }: TableProps) => {
+export const Table = ({ tableKey, tabKey, data }: TableProps) => {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
-	const { handleCheckBoxChange, resetTable, deleteTable } = useTableContext();
+	const { handleCheckBoxChange, resetTable, deleteTable } = useFileDataContext();
 
 	const [confirmModalState, setConfirmModalState] = useState<ConfirmModalType>({
 		isOpen: false,
@@ -64,7 +65,13 @@ export const Table = ({ tableKey, data }: TableProps) => {
 									color={status ? "success" : "primary"}
 									isSelected={status}
 									onChange={(chkbox) =>
-										handleCheckBoxChange(tableKey, rowIndex, statusIndex, chkbox.target.checked)
+										handleCheckBoxChange(
+											tabKey,
+											tableKey,
+											rowIndex,
+											statusIndex,
+											chkbox.target.checked
+										)
 									}
 								/>
 							)}
@@ -142,7 +149,9 @@ export const Table = ({ tableKey, data }: TableProps) => {
 				title={`${confirmModalState.action === "delete" ? "Delete" : "Reset"} ${data.tableName}`}
 				text={`Are you sure you want to ${confirmModalState.action} table called: ${data.tableName}?`}
 				onAccept={() => {
-					confirmModalState.action === "delete" ? deleteTable(tableKey) : resetTable(tableKey);
+					confirmModalState.action === "delete"
+						? deleteTable(tabKey, tableKey)
+						: resetTable(tabKey, tableKey);
 					setConfirmModalState({ action: "none", isOpen: false });
 				}}
 				onDecline={() => setConfirmModalState((value) => ({ ...value, isOpen: false }))}

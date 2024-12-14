@@ -1,8 +1,8 @@
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ColumnElementType, emptyForm, RowElementType, TableForm, TypeOfInput } from "./types";
+import { ColumnElementType, emptyTableForm, RowElementType, TableForm, TypeOfInput } from "./types";
 import { mapFormDataToTableDataType, mapTableDataTypeToFormData } from "./table-generator-mapper";
 import { Days, DaysSort, DaysSortType, TableDataType } from "../../common/types";
-import { useTableContext } from "../../contexts/table-context";
+import { useFileDataContext } from "../../contexts/table-context";
 import { SelectOptions } from "../../common/components/select/select";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { DEFAULT_TABLE_COLOR } from "../../common/constants";
@@ -34,16 +34,17 @@ export const useTableGeneratorController = ({
 	triggerSubmitCallback,
 	triggerResetCallback
 }: UseTableGeneratorControllerProps) => {
-	const { saveTable } = useTableContext();
+	const { saveTable, getGameTabs } = useFileDataContext();
 	const editEffectCheck = useRef(false);
 	const tableSavedCheck = useRef(false);
 
 	const [isEdit, setIsEdit] = useState(false);
 	const [colorPickerState, setColorPickerState] = useState<Record<string, boolean>>({});
 	const [availableColumns, setAvailableColumns] = useState<SelectOptions[]>([]);
+	const [gameTabs, setGameTabs] = useState<SelectOptions[]>([]);
 
 	const { control, trigger, handleSubmit, getValues, reset } = useForm<TableForm>({
-		defaultValues: emptyForm
+		defaultValues: emptyTableForm
 	});
 	const dayOfResetValue = useWatch({ control, name: "dayOfReset" });
 
@@ -64,6 +65,22 @@ export const useTableGeneratorController = ({
 		control,
 		name: "rows"
 	});
+
+	useEffect(
+		function getGameTabsAsync() {
+			void (async () => {
+				const tabs = await getGameTabs();
+
+				setGameTabs(
+					tabs.map((tab) => ({
+						value: tab.key,
+						label: tab.name
+					}))
+				);
+			})();
+		},
+		[getGameTabs]
+	);
 
 	useEffect(
 		function triggerResetForCustomControls() {
@@ -235,6 +252,7 @@ export const useTableGeneratorController = ({
 		availableColumns,
 		reset,
 		isEdit,
-		dayOfResetValue
+		dayOfResetValue,
+		gameTabs
 	};
 };

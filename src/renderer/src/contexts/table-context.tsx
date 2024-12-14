@@ -7,20 +7,29 @@ import {
 	useRef,
 	useState
 } from "react";
-import { TableDataType, TablesType } from "../common/types";
+import {
+	FileStructureTablesType,
+	FileStructureType,
+	GameTabs,
+	TableDataType
+} from "../common/types";
 import { useResetTable } from "../hooks/useResetTable";
 import { useFileSystem } from "../hooks/useFileSystem";
 import { uuidv4 } from "../common/utils";
 import { clearTimeout } from "timers";
 import { useLocation } from "react-router";
+import { TabForm } from "../pages/table-generator/types";
 
 type TableContextType = {
-	tables: TablesType | null;
-	resetTable: (tableName: string) => Promise<void>;
-	deleteTable: (tableName: string) => void;
+	saveTab: (data: TabForm) => Promise<void>;
+	fileData: FileStructureType | null;
+	resetTable: (tableKey: string, tabKey: string) => Promise<void>;
+	deleteTable: (tabKey: string, tableKey: string) => void;
 	saveTable: (data: TableDataType, tableKey?: string | null) => Promise<void>;
+	getGameTabs: () => Promise<GameTabs[]>;
 	handleCheckBoxChange: (
-		tableName: string,
+		tabKey: string,
+		tableKey: string,
 		rowIndex: number,
 		statusIndex: number,
 		change: boolean
@@ -38,10 +47,10 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	//TODO: why do I have this hook?
 	const { resetTable: reset } = useResetTable();
 
-	const [localTables, setLocalTables] = useState<TablesType | null>(null);
+	const [localFileData, setLocalFileData] = useState<FileStructureType | null>(null);
 	const intervalsCreated = useRef(false);
 
-	const getTablesFromFile = useCallback(async (): Promise<TablesType | null> => {
+	const getDataFromFile = useCallback(async (): Promise<FileStructureType | null> => {
 		const data = await readFileAsync();
 
 		if (!data) {
@@ -57,24 +66,24 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	useEffect(
 		function refreshOnLocationChange() {
 			void (async () => {
-				const tables = await getTablesFromFile();
+				const fileData = await getDataFromFile();
 
-				if (!tables) {
+				if (!fileData) {
 					return;
 				}
 
-				setLocalTables(tables);
+				setLocalFileData(fileData);
 			})();
 		},
-		[getTablesFromFile, location]
+		[getDataFromFile, location]
 	);
 
 	const updateState = useCallback(
-		async (nextState: TablesType) => {
+		async (nextState: FileStructureType) => {
 			const res = await writeToFileAsync(JSON.stringify(nextState));
 
 			if (res) {
-				setLocalTables(nextState);
+				setLocalFileData(nextState);
 			}
 
 			return res;
@@ -85,87 +94,120 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	const updateTablesFile = useCallback(
 		async (
 			tableKey: string,
+			tabKey: string,
 			data: TableDataType,
 			resetAt: number | null = null,
 			isNoLongerNew: boolean = false
 		) => {
-			const nextTables: TablesType | null = await getTablesFromFile();
+			const fileData: FileStructureType | null = await getDataFromFile();
 
-			if (!nextTables) {
+			if (!fileData) {
 				console.error(`Cannot update TableContext state. Tables.txt is missing!`);
 				return;
 			}
 
-			nextTables[tableKey] = {
-				...data,
-				resetAt,
-				isNewlyAdded: isNoLongerNew ? false : data.isNewlyAdded
-			};
+			let tables = fileData[tableKey].tables;
 
-			const res = await updateState(nextTables);
+			if (!tables) {
+				tables = {
+					[tableKey]: {
+						...data,
+						resetAt,
+						isNewlyAdded: isNoLongerNew ? false : data.isNewlyAdded
+					}
+				};
+			} else {
+				tables = {
+					...tables,
+					[tableKey]: {
+						...data,
+						resetAt,
+						isNewlyAdded: isNoLongerNew ? false : data.isNewlyAdded
+					}
+				};
+			}
+
+			fileData[tabKey].tables = tables;
+
+			const res = await updateState(fileData);
 			if (!res) {
 				console.error(`Cannot update table with key: ${tableKey}. Writing to tables.txt failed!`);
 			}
 		},
-		[getTablesFromFile, updateState]
+		[getDataFromFile, updateState]
 	);
 
 	const handleTableResetAtRequestedTime = useCallback(async () => {
 		const SEVEN_DAYS_IN_MS = 604_800_000;
 
-		const tables = await getTablesFromFile();
+		const fileData = await getDataFromFile();
 		const now = new Date();
 
 		// empty state
-		if (!tables && !localTables) {
+		if (!fileData && !localFileData) {
 			return;
 		}
 
-		if (!tables) {
+		if (!fileData) {
 			console.error("Failed to reset table. Tables.txt is missing!");
 			return;
 		}
 
-		for (const tableKey of Object.keys(tables)) {
-			const table = tables[tableKey];
-			// table never resets
-			if (!table.resetAt || table.dayOfReset === "never") {
+		for (const tabKey of Object.keys(fileData)) {
+			const tab = fileData[tabKey];
+
+			if (!tab.tables) {
 				continue;
 			}
 
-			const tableResetAt = new Date(table.resetAt);
+			for (const tableKey of Object.keys(tab.tables)) {
+				const table = tab.tables[tableKey];
 
-			// newly created table
-			if (
-				table.isNewlyAdded &&
-				tableResetAt.getDate() === now.getDate() &&
-				tableResetAt.getMonth() === now.getMonth()
-			) {
-				continue;
-			}
+				// table never resets
+				if (!table.resetAt || table.dayOfReset === "never") {
+					continue;
+				}
 
-			const lastResetWasWeekOrMoreAgo = now.getTime() >= tableResetAt.getTime() + SEVEN_DAYS_IN_MS;
+				const tableResetAt = new Date(table.resetAt);
 
-			const monthsAreDifferentButTheDayIsTheSame =
-				tableResetAt.getDate() === now.getDate() && tableResetAt.getMonth() != now.getMonth();
+				// newly created table
+				if (
+					table.isNewlyAdded &&
+					tableResetAt.getDate() === now.getDate() &&
+					tableResetAt.getMonth() === now.getMonth()
+				) {
+					continue;
+				}
 
-			const isTableResetDayTodayOrAlways =
-				table.dayOfReset === now.getDay().toString() || table.dayOfReset === "always";
+				const lastResetWasWeekOrMoreAgo =
+					now.getTime() >= tableResetAt.getTime() + SEVEN_DAYS_IN_MS;
 
-			const shouldResetToday =
-				(tableResetAt.getDate() !== now.getDate() || monthsAreDifferentButTheDayIsTheSame) &&
-				isTableResetDayTodayOrAlways;
+				const monthsAreDifferentButTheDayIsTheSame =
+					tableResetAt.getDate() === now.getDate() && tableResetAt.getMonth() != now.getMonth();
 
-			const isItTimeDoctorFreeman =
-				now.getHours() > table.timeOfReset.hour ||
-				(now.getHours() === table.timeOfReset.hour && now.getMinutes() >= table.timeOfReset.minute);
+				const isTableResetDayTodayOrAlways =
+					table.dayOfReset === now.getDay().toString() || table.dayOfReset === "always";
 
-			if ((shouldResetToday || lastResetWasWeekOrMoreAgo) && isItTimeDoctorFreeman) {
-				const clearedTable = reset(tables[tableKey]);
-				await updateTablesFile(tableKey, clearedTable, new Date().getTime(), true);
+				const shouldResetToday =
+					(tableResetAt.getDate() !== now.getDate() || monthsAreDifferentButTheDayIsTheSame) &&
+					isTableResetDayTodayOrAlways;
+
+				const isItTimeDoctorFreeman =
+					now.getHours() > table.timeOfReset.hour ||
+					(now.getHours() === table.timeOfReset.hour &&
+						now.getMinutes() >= table.timeOfReset.minute);
+
+				if ((shouldResetToday || lastResetWasWeekOrMoreAgo) && isItTimeDoctorFreeman) {
+					const selectedTable = fileData[tabKey].tables?.[tableKey];
+
+					if (selectedTable) {
+						const clearedTable = reset(selectedTable);
+						await updateTablesFile(tableKey, tabKey, clearedTable, new Date().getTime(), true);
+					}
+				}
 			}
 		}
-	}, [getTablesFromFile, localTables, reset, updateTablesFile]);
+	}, [getDataFromFile, localFileData, reset, updateTablesFile]);
 
 	const createTableResetInterval = useCallback(
 		() =>
@@ -213,30 +255,39 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 	// public:
 	const resetTable = useCallback(
-		async (tableKey: string) => {
-			const tables = await getTablesFromFile();
+		async (tableKey: string, tabKey: string) => {
+			const fileData = await getDataFromFile();
 
-			if (!tables) {
+			if (!fileData) {
 				console.error("Cannot reset table. Tables.txt is missing!");
 				return;
 			}
 
-			const clearedTable = reset(tables[tableKey]);
-			await updateTablesFile(tableKey, clearedTable, new Date().getTime());
+			const selectedTable = fileData[tabKey].tables?.[tableKey];
+
+			if (selectedTable) {
+				const clearedTable = reset(selectedTable);
+				await updateTablesFile(tableKey, tabKey, clearedTable, new Date().getTime());
+			}
 		},
-		[getTablesFromFile, reset, updateTablesFile]
+		[getDataFromFile, reset, updateTablesFile]
 	);
 
 	const deleteTable = useCallback(
-		async (tableKey: string) => {
-			const tables = await getTablesFromFile();
+		async (tabKey: string, tableKey: string) => {
+			const fileData = await getDataFromFile();
 
-			if (!tables) {
+			if (!fileData) {
 				console.error("Cannot delete table. Tables.txt is missing!");
 				return;
 			}
 
-			const nextTables: TablesType = {};
+			const nextTables: FileStructureTablesType = {};
+			const tables = fileData[tabKey].tables;
+
+			if (!tables) {
+				return;
+			}
 
 			Object.keys(tables)
 				.filter((key) => key !== tableKey)
@@ -244,47 +295,89 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 					nextTables[key] = tables[key];
 				});
 
-			const res = await updateState(nextTables);
+			fileData[tabKey].tables = nextTables;
+
+			const res = await updateState(fileData);
 
 			if (!res) {
 				console.error("Cannot delete table. Writing to tables.txt failed!");
 			}
 		},
-		[getTablesFromFile, updateState]
+		[getDataFromFile, updateState]
 	);
 
 	const saveTable = useCallback(
-		async (data: TableDataType, tableKey: string | null = null) => {
+		async (data: TableDataType, tableKey: string | undefined | null = null) => {
 			void (async () => {
-				let nextTables = (await getTablesFromFile()) ?? {};
+				const fileData = (await getDataFromFile()) ?? {};
 
-				if (tableKey) {
-					nextTables[tableKey] = data;
+				let tables = fileData[data.tabKey].tables;
+
+				if (!tables) {
+					tables = {
+						[tableKey == null ? uuidv4() : tableKey]: data
+					};
 				} else {
-					const newKey = uuidv4();
-					nextTables = { ...nextTables, [newKey]: data };
+					tables = {
+						...tables,
+						[tableKey == null ? uuidv4() : tableKey]: data
+					};
 				}
 
-				const res = await updateState(nextTables);
+				fileData[data.tabKey].tables = tables;
+
+				const res = await updateState(fileData);
 				if (!res) {
 					// TODO: add error toast for user
 					console.error("Failed to save table data! Please try again.");
 				}
 			})();
 		},
-		[getTablesFromFile, updateState]
+		[getDataFromFile, updateState]
+	);
+
+	const saveTab = useCallback(
+		async (data: TabForm) => {
+			void (async () => {
+				const newKey = uuidv4();
+				let nextData = (await getDataFromFile()) ?? {};
+
+				nextData = {
+					...nextData,
+					[newKey]: {
+						tabName: data.tabName,
+						tables: null
+					}
+				};
+
+				const res = await updateState(nextData);
+				if (!res) {
+					// TODO: add error toast for user
+					console.error("Failed to create new Game Tab! Please try again.");
+				}
+			})();
+		},
+		[getDataFromFile, updateState]
 	);
 
 	const handleCheckBoxChange = useCallback(
-		async (tableKey: string, rowIndex: number, statusIndex: number, change: boolean) => {
-			const tables = await getTablesFromFile();
+		async (
+			tabKey: string,
+			tableKey: string,
+			rowIndex: number,
+			statusIndex: number,
+			change: boolean
+		) => {
+			const fileData = await getDataFromFile();
 
-			if (!tables) {
+			if (!fileData) {
 				console.error("Cannot toggle checkbox because tables.txt is missing!");
 				return;
 			}
 
-			if (!tables[tableKey]) {
+			const tables = fileData[tabKey].tables;
+
+			if (!fileData[tabKey].tables?.[tableKey]) {
 				console.error(
 					`Cannot update state of table with key ${tableKey} because no such table exists in TableContext`
 				);
@@ -293,26 +386,41 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 
 			const nextState = { ...tables };
 			nextState[tableKey].rows[rowIndex].statuses[statusIndex] = change;
+			fileData[tabKey].tables = tables;
 
-			const res = await updateState(nextState);
-
+			const res = await updateState(fileData);
 			if (!res) {
 				console.error(
 					`Cannot toggle checkbox for table with key: ${tableKey}. Writing to tables.txt failed!`
 				);
 			}
 		},
-		[getTablesFromFile, updateState]
+		[getDataFromFile, updateState]
 	);
+
+	const getGameTabs = useCallback(async () => {
+		const fileData = await getDataFromFile();
+
+		if (!fileData) {
+			return [];
+		}
+
+		return Object.keys(fileData).map((key) => ({
+			name: fileData[key].tabName,
+			key: key
+		}));
+	}, [getDataFromFile]);
 
 	return (
 		<TableContext.Provider
 			value={{
-				tables: localTables,
+				fileData: localFileData,
 				resetTable,
 				deleteTable,
 				saveTable,
-				handleCheckBoxChange
+				handleCheckBoxChange,
+				saveTab,
+				getGameTabs
 			}}
 		>
 			{children}
@@ -320,7 +428,7 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 	);
 };
 
-export const useTableContext = () => {
+export const useFileDataContext = () => {
 	const context = useContext(TableContext);
 	if (!context) {
 		throw new Error("TableContext must be used within a Provider");

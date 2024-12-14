@@ -20,6 +20,7 @@ export type TableDataType = {
 	timeOfReset: Time;
 	rows: RowDataType[];
 	columns: ColumnDataType[];
+	tabKey: string;
 };
 
 export const DaysSort = [
@@ -50,4 +51,16 @@ export type TimeTableType = {
 	dayOfReset: DayOfResetType;
 };
 
-export type TablesType = Record<string, TableDataType>;
+export type FileStructureTablesType = Record<string, TableDataType> | null;
+
+export type FileStructurePropertiesType = {
+	tabName: string;
+	tables: FileStructureTablesType;
+};
+
+export type FileStructureType = Record<string, FileStructurePropertiesType>;
+
+export type GameTabs = {
+	name: string;
+	key: string;
+};

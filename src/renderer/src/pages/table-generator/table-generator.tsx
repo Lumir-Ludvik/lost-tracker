@@ -34,7 +34,8 @@ export const TableGenerator = ({
 		rowFields,
 		handleSubmit,
 		isEdit,
-		dayOfResetValue
+		dayOfResetValue,
+		gameTabs
 	} = useTableGeneratorController({
 		tableKey,
 		tableData,
@@ -57,7 +58,27 @@ export const TableGenerator = ({
 					<Input label="Table name:" field={field} error={error} value={field.value} />
 				)}
 			/>
-
+			<Controller
+				name="tabKey"
+				control={control}
+				rules={{
+					required: { value: true, message: "This field is required" }
+				}}
+				render={({ field, fieldState: { error } }) => (
+					<Select
+						disallowEmptySelection
+						label="Select Game tab"
+						value={field.value}
+						selectedKeys={[field.value]}
+						field={field}
+						error={error}
+						onChange={(event) => {
+							field.onChange(event.target.value);
+						}}
+						options={gameTabs}
+					/>
+				)}
+			/>
 			<div className="flex gap-3">
 				<Controller
 					name="dayOfReset"

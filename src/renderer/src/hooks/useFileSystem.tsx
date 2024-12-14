@@ -28,7 +28,6 @@ export const useFileSystem = () => {
 	const readFileAsync = useCallback(
 		async (path: string = DEFAULT_FILE_PATH): Promise<string | false> => {
 			try {
-				console.log("UFO read");
 				return (await fs.readFile(path)).toString();
 			} catch (err) {
 				console.error(`Cannot read from file ${path}. Error: ${err}`);
