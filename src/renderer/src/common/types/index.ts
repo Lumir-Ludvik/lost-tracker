@@ -64,3 +64,9 @@ export type GameTabs = {
 	name: string;
 	key: string;
 };
+
+export type ConfirmModalType<T = object> = {
+	isOpen: boolean;
+	action: "reset" | "delete" | "none";
+	data?: T;
+};

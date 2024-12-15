@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { Days, TableDataType } from "../../types";
+import { ConfirmModalType, Days, TableDataType } from "../../types";
 import "./table.scss";
 import { Button, Checkbox, Image, useDisclosure } from "@nextui-org/react";
-import { useFileDataContext } from "../../../contexts/table-context";
+import { useFileDataContext } from "../../../contexts/file-data-context";
 import deleteIcon from "../../../assets/icons/delete.svg";
 import editIcon from "../../../assets/icons/edit.svg";
 import resetIcon from "../../../assets/icons/reset.svg";
@@ -14,11 +14,6 @@ type TableProps = {
 	data: TableDataType;
 	tableKey: string;
 	tabKey: string;
-};
-
-type ConfirmModalType = {
-	isOpen: boolean;
-	action: "reset" | "delete" | "none";
 };
 
 export const Table = ({ tableKey, tabKey, data }: TableProps) => {
@@ -123,14 +118,14 @@ export const Table = ({ tableKey, tabKey, data }: TableProps) => {
 						<Image src={deleteIcon} isZoomed alt="delete" width="24" />
 					</Button>
 					<Button color="default" isIconOnly onClick={onOpen}>
-						<Image src={editIcon} isZoomed alt="delete" width="24" />
+						<Image src={editIcon} isZoomed alt="edit" width="24" />
 					</Button>
 					<Button
 						color="default"
 						isIconOnly
 						onClick={() => setConfirmModalState({ action: "reset", isOpen: true })}
 					>
-						<Image src={resetIcon} isZoomed alt="delete" width="24" />
+						<Image src={resetIcon} isZoomed alt="reset" width="24" />
 					</Button>
 				</div>
 			</div>

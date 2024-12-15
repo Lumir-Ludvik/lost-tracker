@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { emptyTabForm, TabForm } from "../table-generator/types";
 import { useCallback } from "react";
-import { useFileDataContext } from "../../contexts/table-context";
+import { useFileDataContext } from "../../contexts/file-data-context";
 
 export const useTabGeneratorController = () => {
 	const { saveTab } = useFileDataContext();

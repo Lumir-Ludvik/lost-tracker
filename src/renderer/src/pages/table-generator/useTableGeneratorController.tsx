@@ -2,7 +2,7 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "
 import { ColumnElementType, emptyTableForm, RowElementType, TableForm, TypeOfInput } from "./types";
 import { mapFormDataToTableDataType, mapTableDataTypeToFormData } from "./table-generator-mapper";
 import { Days, DaysSort, DaysSortType, TableDataType } from "../../common/types";
-import { useFileDataContext } from "../../contexts/table-context";
+import { useFileDataContext } from "../../contexts/file-data-context";
 import { SelectOptions } from "../../common/components/select/select";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { DEFAULT_TABLE_COLOR } from "../../common/constants";

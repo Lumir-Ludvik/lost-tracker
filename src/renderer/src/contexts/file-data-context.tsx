@@ -26,6 +26,7 @@ type TableContextType = {
 	resetTable: (tableKey: string, tabKey: string) => Promise<void>;
 	deleteTable: (tabKey: string, tableKey: string) => void;
 	saveTable: (data: TableDataType, tableKey?: string | null) => Promise<void>;
+	deleteTab: (tabKey: string) => Promise<void>;
 	getGameTabs: () => Promise<GameTabs[]>;
 	handleCheckBoxChange: (
 		tabKey: string,
@@ -37,11 +38,11 @@ type TableContextType = {
 };
 
 // TODO: bette type safety
-const TableContext = createContext<TableContextType>({
+const FileDataContext = createContext<TableContextType>({
 	tables: []
 } as unknown as TableContextType);
 
-export const TableContextProvider = ({ children }: PropsWithChildren) => {
+export const FileDataContextProvider = ({ children }: PropsWithChildren) => {
 	const { writeToFileAsync, readFileAsync } = useFileSystem();
 	const location = useLocation();
 	//TODO: why do I have this hook?
@@ -411,8 +412,34 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 		}));
 	}, [getDataFromFile]);
 
+	const deleteTab = useCallback(
+		async (tabKey: string) => {
+			const fileData = await getDataFromFile();
+
+			if (!fileData) {
+				console.error("Cannot delete tab. Tables.txt is missing!");
+				return;
+			}
+
+			const nextFileData: FileStructureType = Object.keys(fileData).reduce((acc, cur) => {
+				if (cur !== tabKey) {
+					acc[cur] = fileData[cur];
+				}
+
+				return acc;
+			}, {});
+
+			const res = await updateState(nextFileData);
+			if (!res) {
+				// TODO: add error toast for user
+				console.error("Failed to delete Game Tab! Please try again.");
+			}
+		},
+		[getDataFromFile, updateState]
+	);
+
 	return (
-		<TableContext.Provider
+		<FileDataContext.Provider
 			value={{
 				fileData: localFileData,
 				resetTable,
@@ -420,18 +447,19 @@ export const TableContextProvider = ({ children }: PropsWithChildren) => {
 				saveTable,
 				handleCheckBoxChange,
 				saveTab,
-				getGameTabs
+				getGameTabs,
+				deleteTab
 			}}
 		>
 			{children}
-		</TableContext.Provider>
+		</FileDataContext.Provider>
 	);
 };
 
 export const useFileDataContext = () => {
-	const context = useContext(TableContext);
+	const context = useContext(FileDataContext);
 	if (!context) {
-		throw new Error("TableContext must be used within a Provider");
+		throw new Error("FileDataContext must be used within a Provider");
 	}
 
 	return context;
