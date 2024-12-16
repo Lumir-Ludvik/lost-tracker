@@ -139,10 +139,12 @@ export const TableView = () => {
 												<Link to="./table-generator" className="link">
 													Go to table generator
 												</Link>
-												Or delete this Game tab
-												<Button color="danger" onClick={() => deleteTab(tab.tabKey)}>
-													Delete
-												</Button>
+												<p className="delete-tab-text">
+													Or delete this Game tab:
+													<Button color="danger" onClick={() => deleteTab(tab.tabKey)}>
+														Delete
+													</Button>
+												</p>
 											</div>
 										)}
 									</div>
