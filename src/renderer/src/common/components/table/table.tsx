@@ -1,28 +1,24 @@
 import { useMemo, useState } from "react";
-import { Days, TableDataType } from "../../types";
+import { ConfirmModalType, Days, TableDataType } from "../../types";
 import "./table.scss";
 import { Button, Checkbox, Image, useDisclosure } from "@nextui-org/react";
-import { useTableContext } from "../../../contexts/table-context";
+import { useFileDataContext } from "../../../contexts/file-data-context";
 import deleteIcon from "../../../assets/icons/delete.svg";
 import editIcon from "../../../assets/icons/edit.svg";
 import resetIcon from "../../../assets/icons/reset.svg";
-import { EditTableModal } from "../edit-table-modal/edit-table-modal";
+import { EditTableModal } from "../../../pages/table-generator/edit-table-modal/edit-table-modal";
 import { ConfirmModal } from "../confirm-modal/confirm-modal";
 import { generateTimeString, hexToAccessibilityTextHsl } from "../../utils";
 
 type TableProps = {
 	data: TableDataType;
 	tableKey: string;
+	tabKey: string;
 };
 
-type ConfirmModalType = {
-	isOpen: boolean;
-	action: "reset" | "delete" | "none";
-};
-
-export const Table = ({ tableKey, data }: TableProps) => {
+export const Table = ({ tableKey, tabKey, data }: TableProps) => {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
-	const { handleCheckBoxChange, resetTable, deleteTable } = useTableContext();
+	const { handleCheckBoxChange, resetTable, deleteTable } = useFileDataContext();
 
 	const [confirmModalState, setConfirmModalState] = useState<ConfirmModalType>({
 		isOpen: false,
@@ -64,7 +60,13 @@ export const Table = ({ tableKey, data }: TableProps) => {
 									color={status ? "success" : "primary"}
 									isSelected={status}
 									onChange={(chkbox) =>
-										handleCheckBoxChange(tableKey, rowIndex, statusIndex, chkbox.target.checked)
+										handleCheckBoxChange(
+											tabKey,
+											tableKey,
+											rowIndex,
+											statusIndex,
+											chkbox.target.checked
+										)
 									}
 								/>
 							)}
@@ -73,7 +75,7 @@ export const Table = ({ tableKey, data }: TableProps) => {
 				</tr>
 			);
 		});
-	}, [data.rows, handleCheckBoxChange, tableKey]);
+	}, [data.rows, handleCheckBoxChange, tabKey, tableKey]);
 
 	return (
 		<>
@@ -116,14 +118,14 @@ export const Table = ({ tableKey, data }: TableProps) => {
 						<Image src={deleteIcon} isZoomed alt="delete" width="24" />
 					</Button>
 					<Button color="default" isIconOnly onClick={onOpen}>
-						<Image src={editIcon} isZoomed alt="delete" width="24" />
+						<Image src={editIcon} isZoomed alt="edit" width="24" />
 					</Button>
 					<Button
 						color="default"
 						isIconOnly
 						onClick={() => setConfirmModalState({ action: "reset", isOpen: true })}
 					>
-						<Image src={resetIcon} isZoomed alt="delete" width="24" />
+						<Image src={resetIcon} isZoomed alt="reset" width="24" />
 					</Button>
 				</div>
 			</div>
@@ -142,7 +144,9 @@ export const Table = ({ tableKey, data }: TableProps) => {
 				title={`${confirmModalState.action === "delete" ? "Delete" : "Reset"} ${data.tableName}`}
 				text={`Are you sure you want to ${confirmModalState.action} table called: ${data.tableName}?`}
 				onAccept={() => {
-					confirmModalState.action === "delete" ? deleteTable(tableKey) : resetTable(tableKey);
+					confirmModalState.action === "delete"
+						? deleteTable(tabKey, tableKey)
+						: resetTable(tabKey, tableKey);
 					setConfirmModalState({ action: "none", isOpen: false });
 				}}
 				onDecline={() => setConfirmModalState((value) => ({ ...value, isOpen: false }))}

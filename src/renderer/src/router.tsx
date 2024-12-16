@@ -4,6 +4,7 @@ import { GenericError } from "./pages/generic-error-page/generic-error";
 import { TableView } from "./pages/table-view/table-view";
 import { TableGenerator } from "./pages/table-generator/table-generator";
 import { NotFound } from "./pages/not-found/not-found";
+import { TabGenerator } from "./pages/tab-generator/tab-generator";
 
 export const Router = createHashRouter([
 	{
@@ -16,12 +17,16 @@ export const Router = createHashRouter([
 				element: <TableView />
 			},
 			{
-				path: "/generator",
+				path: "/table-generator",
 				element: <TableGenerator />
 			},
 			{
 				path: "/error",
 				element: <GenericError />
+			},
+			{
+				path: "/tab-generator",
+				element: <TabGenerator />
 			},
 			{
 				path: "*",

@@ -6,8 +6,8 @@ import {
 	ModalFooter,
 	ModalHeader
 } from "@nextui-org/react";
-import { TableGenerator } from "../../../pages/table-generator/table-generator";
-import { TableDataType } from "../../types";
+import { TableGenerator } from "../table-generator";
+import { TableDataType } from "../../../common/types";
 import "./edit-table-modal.scss";
 import { useState } from "react";
 

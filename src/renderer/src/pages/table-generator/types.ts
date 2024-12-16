@@ -24,6 +24,11 @@ export type TableForm = {
 	timeOfReset: Time;
 	columns: ColumnElementType[];
 	rows: RowElementType[];
+	tabKey: string;
+};
+
+export type TabForm = {
+	tabName: string;
 };
 
 export type TypeOfInput = "row" | "column";
@@ -39,12 +44,17 @@ export type TableGeneratorProps = {
 	triggerResetCallback?: (value: boolean) => void;
 };
 
-export const emptyForm: TableForm = {
+export const emptyTableForm: TableForm = {
 	isNewlyAdded: true,
 	resetAt: new Date().getTime(),
 	tableName: "",
 	dayOfReset: DEFAULT_DAY_OF_RESET,
 	timeOfReset: DEFAULT_TIME_OF_RESET,
 	columns: [{ value: "", color: DEFAULT_TABLE_COLOR }],
-	rows: [{ value: "", color: DEFAULT_TABLE_COLOR, availableFor: "", statuses: [] }]
+	rows: [{ value: "", color: DEFAULT_TABLE_COLOR, availableFor: "", statuses: [] }],
+	tabKey: ""
+};
+
+export const emptyTabForm: TabForm = {
+	tabName: ""
 };
