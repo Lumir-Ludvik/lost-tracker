@@ -1,14 +1,15 @@
 import "./table-view.scss";
 import { useFileDataContext } from "../../contexts/file-data-context";
 import { Table } from "../../common/components/table/table";
-import { useMemo, useState } from "react";
-import { Button, Card, CardBody, Image, Tab, Tabs, useDisclosure } from "@nextui-org/react";
+import { useEffect, useMemo, useState } from "react";
+import { Button, Card, CardBody, Image, Input, Tab, Tabs, useDisclosure } from "@nextui-org/react";
 import { Link } from "react-router-dom";
 import editIcon from "../../assets/icons/edit.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
 import { ConfirmModal } from "../../common/components/confirm-modal/confirm-modal";
 import { ConfirmModalType, TabType } from "../../common/types";
 import { EditTabModal } from "../tab-generator/edit-tab-modal/edit-tab-modal";
+import { clearTimeout } from "timers";
 
 type TabDeleteConfirmModalData = {
 	tabKey: string;
@@ -23,6 +24,8 @@ export const TableView = () => {
 		onOpenChange: onEditTabOpenChange
 	} = useDisclosure();
 
+	const [searchInput, setSearchInput] = useState("");
+	const [debouncedSearchInput, setDebouncedSearchInput] = useState("");
 	const [editModalState, setEditModalState] = useState<TabType | null>(null);
 	const [confirmModalState, setConfirmModalState] = useState<
 		ConfirmModalType<TabDeleteConfirmModalData>
@@ -31,19 +34,44 @@ export const TableView = () => {
 		action: "none"
 	});
 
+	useEffect(
+		function debounceSearch() {
+			const debounce = setTimeout(() => {
+				setDebouncedSearchInput(searchInput.trim());
+			}, 300);
+
+			return () => clearTimeout(debounce);
+		},
+		[searchInput]
+	);
+
 	const tabs = useMemo(() => {
 		if (!fileData) {
 			return [];
 		}
 
-		return Object.keys(fileData).map((key) => ({
-			tabName: fileData[key].tabName,
-			tabKey: key
-		}));
-	}, [fileData]);
+		return Object.keys(fileData)
+			.map((key) => ({
+				tabName: fileData[key].tabName,
+				tabKey: key
+			}))
+			.filter((tab) => {
+				if (debouncedSearchInput === "") {
+					return true;
+				}
+
+				return tab.tabName.includes(debouncedSearchInput);
+			});
+	}, [debouncedSearchInput, fileData]);
 
 	return (
-		<>
+		<div className="table-view-container">
+			<Input
+				className="search-input"
+				label="Search games"
+				value={searchInput}
+				onChange={(event) => setSearchInput(event.target.value)}
+			/>
 			{tabs.length > 0 && (
 				<Tabs className="tabs" placement="start">
 					{tabs.map((tab) => (
@@ -127,7 +155,7 @@ export const TableView = () => {
 
 			{tabs.length === 0 && (
 				<div className="no-tabs">
-					<h1>No games found! 😥</h1>
+					<h1>No games found! 😥 Try changing your search criteria or create some!</h1>
 					<Link to="./tab-generator" className="link">
 						Go to Game generator
 					</Link>
@@ -158,6 +186,6 @@ export const TableView = () => {
 					tabData={{ tabName: editModalState.tabName, tabKey: editModalState.tabKey }}
 				/>
 			)}
-		</>
+		</div>
 	);
 };

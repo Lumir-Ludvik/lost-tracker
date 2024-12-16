@@ -1,3 +1,15 @@
+.table-view-container {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding: 1rem;
+
+	.search-input {
+		margin-left: 1rem;
+		max-width: 30rem;
+	}
+}
+
 .table-view {
 	display: flex;
 	flex-wrap: wrap;
