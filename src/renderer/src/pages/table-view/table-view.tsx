@@ -2,12 +2,13 @@ import "./table-view.scss";
 import { useFileDataContext } from "../../contexts/file-data-context";
 import { Table } from "../../common/components/table/table";
 import { useMemo, useState } from "react";
-import { Button, Card, CardBody, Image, Tab, Tabs } from "@nextui-org/react";
+import { Button, Card, CardBody, Image, Tab, Tabs, useDisclosure } from "@nextui-org/react";
 import { Link } from "react-router-dom";
 import editIcon from "../../assets/icons/edit.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
 import { ConfirmModal } from "../../common/components/confirm-modal/confirm-modal";
-import { ConfirmModalType } from "../../common/types";
+import { ConfirmModalType, TabType } from "../../common/types";
+import { EditTabModal } from "../tab-generator/edit-tab-modal/edit-tab-modal";
 
 type TabDeleteConfirmModalData = {
 	tabKey: string;
@@ -15,7 +16,14 @@ type TabDeleteConfirmModalData = {
 
 export const TableView = () => {
 	const { fileData, deleteTab } = useFileDataContext();
+	const {
+		isOpen: isEditTabOpen,
+		onOpen: onEditTabOpen,
+		onClose: onEditTabClose,
+		onOpenChange: onEditTabOpenChange
+	} = useDisclosure();
 
+	const [editModalState, setEditModalState] = useState<TabType | null>(null);
 	const [confirmModalState, setConfirmModalState] = useState<
 		ConfirmModalType<TabDeleteConfirmModalData>
 	>({
@@ -45,7 +53,7 @@ export const TableView = () => {
 							title={
 								<div className="tab-title">
 									<p>{tab.tabName}</p>
-									<div>
+									<div className="tab-actions">
 										<Button className="delete-tab" color="default" isIconOnly fullWidth={false}>
 											<Image
 												src={deleteIcon}
@@ -61,7 +69,18 @@ export const TableView = () => {
 												}
 											/>
 										</Button>
-										<Button className="edit-tab" color="default" isIconOnly>
+										<Button
+											className="edit-tab"
+											color="default"
+											isIconOnly
+											onClick={() => {
+												setEditModalState({
+													tabName: tab.tabName,
+													tabKey: tab.tabKey
+												});
+												onEditTabOpen();
+											}}
+										>
 											<Image src={editIcon} isZoomed alt="edit" width="24" />
 										</Button>
 									</div>
@@ -130,6 +149,15 @@ export const TableView = () => {
 				}}
 				onDecline={() => setConfirmModalState((value) => ({ ...value, isOpen: false }))}
 			/>
+
+			{editModalState && (
+				<EditTabModal
+					isOpen={isEditTabOpen}
+					onClose={onEditTabClose}
+					onOpenChange={onEditTabOpenChange}
+					tabData={{ tabName: editModalState.tabName, tabKey: editModalState.tabKey }}
+				/>
+			)}
 		</>
 	);
 };

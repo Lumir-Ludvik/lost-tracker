@@ -70,3 +70,8 @@ export type ConfirmModalType<T = object> = {
 	action: "reset" | "delete" | "none";
 	data?: T;
 };
+
+export type TabType = {
+	tabName: string;
+	tabKey: string;
+};

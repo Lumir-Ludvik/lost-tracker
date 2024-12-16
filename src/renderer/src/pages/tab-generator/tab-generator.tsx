@@ -3,9 +3,35 @@ import { Input } from "../../common/components/input/input";
 import { useTabGeneratorController } from "./useTabGeneratorController";
 import { Button } from "@nextui-org/react";
 import "./tab-generator.scss";
+import { TabType } from "../../common/types";
 
-export const TabGenerator = () => {
-	const { handleSubmit, reset, createTab, control } = useTabGeneratorController();
+type TabGeneratorProps = {
+	tabData?: TabType;
+	onSubmitCallback?: () => void;
+	hasCustomActions?: boolean;
+	triggerSubmit?: boolean;
+	triggerSubmitCallback?: (value: boolean) => void;
+	triggerReset?: boolean;
+	triggerResetCallback?: (value: boolean) => void;
+};
+
+export const TabGenerator = ({
+	tabData,
+	onSubmitCallback,
+	triggerSubmit,
+	triggerSubmitCallback,
+	triggerReset,
+	triggerResetCallback,
+	hasCustomActions
+}: TabGeneratorProps) => {
+	const { isEdit, handleSubmit, reset, createTab, control } = useTabGeneratorController({
+		tabData,
+		onSubmitCallback,
+		triggerSubmit,
+		triggerSubmitCallback,
+		triggerReset,
+		triggerResetCallback
+	});
 
 	return (
 		<form className="tab-generator" onSubmit={handleSubmit(createTab)}>
@@ -20,14 +46,16 @@ export const TabGenerator = () => {
 				)}
 			/>
 
-			<div className="flex gap-4">
-				<Button color="primary" type="submit">
-					Create Game
-				</Button>
-				<Button color="secondary" type="button" onClick={() => reset()}>
-					Reset form
-				</Button>
-			</div>
+			{!hasCustomActions && (
+				<div className="flex gap-4">
+					<Button color="primary" type="submit">
+						{isEdit ? "Edit" : "Create"} Game
+					</Button>
+					<Button color="secondary" type="button" onClick={() => reset()}>
+						Reset form
+					</Button>
+				</div>
+			)}
 		</form>
 	);
 };

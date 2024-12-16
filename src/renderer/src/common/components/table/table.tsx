@@ -6,7 +6,7 @@ import { useFileDataContext } from "../../../contexts/file-data-context";
 import deleteIcon from "../../../assets/icons/delete.svg";
 import editIcon from "../../../assets/icons/edit.svg";
 import resetIcon from "../../../assets/icons/reset.svg";
-import { EditTableModal } from "../edit-table-modal/edit-table-modal";
+import { EditTableModal } from "../../../pages/table-generator/edit-table-modal/edit-table-modal";
 import { ConfirmModal } from "../confirm-modal/confirm-modal";
 import { generateTimeString, hexToAccessibilityTextHsl } from "../../utils";
 
@@ -75,7 +75,7 @@ export const Table = ({ tableKey, tabKey, data }: TableProps) => {
 				</tr>
 			);
 		});
-	}, [data.rows, handleCheckBoxChange, tableKey]);
+	}, [data.rows, handleCheckBoxChange, tabKey, tableKey]);
 
 	return (
 		<>

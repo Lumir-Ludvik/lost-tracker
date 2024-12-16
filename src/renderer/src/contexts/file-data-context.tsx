@@ -21,7 +21,7 @@ import { useLocation } from "react-router";
 import { TabForm } from "../pages/table-generator/types";
 
 type TableContextType = {
-	saveTab: (data: TabForm) => Promise<void>;
+	saveTab: (data: TabForm, tabKey?: string) => Promise<void>;
 	fileData: FileStructureType | null;
 	resetTable: (tableKey: string, tabKey: string) => Promise<void>;
 	deleteTable: (tabKey: string, tableKey: string) => void;
@@ -338,16 +338,16 @@ export const FileDataContextProvider = ({ children }: PropsWithChildren) => {
 	);
 
 	const saveTab = useCallback(
-		async (data: TabForm) => {
+		async (data: TabForm, tabKey?: string) => {
 			void (async () => {
 				const newKey = uuidv4();
 				let nextData = (await getDataFromFile()) ?? {};
 
 				nextData = {
 					...nextData,
-					[newKey]: {
+					[tabKey ? tabKey : newKey]: {
 						tabName: data.tabName,
-						tables: null
+						tables: tabKey ? nextData[tabKey].tables : null
 					}
 				};
 

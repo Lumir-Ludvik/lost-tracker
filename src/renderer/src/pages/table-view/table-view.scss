@@ -27,6 +27,12 @@
 		display: flex;
 		align-items: center;
 
+		.tab-actions {
+			margin-left: 1rem;
+			display: flex;
+			gap: 0.25rem;
+		}
+
 		.delete-tab,
 		.edit-tab {
 			visibility: hidden;
