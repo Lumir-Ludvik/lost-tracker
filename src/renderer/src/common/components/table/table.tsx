@@ -146,7 +146,7 @@ export const Table = ({ tableKey, tabKey, data }: TableProps) => {
 				onAccept={() => {
 					confirmModalState.action === "delete"
 						? deleteTable(tabKey, tableKey)
-						: resetTable(tabKey, tableKey);
+						: resetTable( tableKey,tabKey);
 					setConfirmModalState({ action: "none", isOpen: false });
 				}}
 				onDecline={() => setConfirmModalState((value) => ({ ...value, isOpen: false }))}
