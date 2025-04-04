@@ -107,7 +107,7 @@ export const FileDataContextProvider = ({ children }: PropsWithChildren) => {
 				return;
 			}
 
-			let tables = fileData[tableKey].tables;
+			let tables = fileData[tabKey].tables;
 
 			if (!tables) {
 				tables = {
