@@ -2,7 +2,17 @@ import "./table-view.scss";
 import { useFileDataContext } from "../../contexts/file-data-context";
 import { Table } from "../../common/components/table/table";
 import { useEffect, useMemo, useState } from "react";
-import { Button, Card, CardBody, Image, Input, Tab, Tabs, useDisclosure } from "@nextui-org/react";
+import {
+	Button,
+	Card,
+	CardBody,
+	Image,
+	Input,
+	Tab,
+	Tabs,
+	Tooltip,
+	useDisclosure
+} from "@nextui-org/react";
 import { Link } from "react-router-dom";
 import editIcon from "../../assets/icons/edit.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
@@ -80,7 +90,9 @@ export const TableView = () => {
 							key={tab.tabKey}
 							title={
 								<div className="tab-title">
-									<p>{tab.tabName}</p>
+									<Tooltip color="primary" placement="bottom" content={tab.tabName}>
+										<p className="tab-title-text">{tab.tabName}</p>
+									</Tooltip>
 									<div className="tab-actions">
 										<Button className="delete-tab" color="default" isIconOnly fullWidth={false}>
 											<Image

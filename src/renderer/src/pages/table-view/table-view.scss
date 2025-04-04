@@ -43,6 +43,13 @@
 	flex: 1;
 
 	.tab-title {
+		.tab-title-text {
+			max-width: 6rem;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			overflow: hidden;
+		}
+
 		display: flex;
 		align-items: center;
 
