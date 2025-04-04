@@ -4,11 +4,11 @@ import "./table-generator.scss";
 import { TableGeneratorProps } from "./types";
 import { Input } from "../../common/components/input/input";
 import { Select } from "../../common/components/select/select";
-import { ColorPicker } from "../../common/components/color-picker/color-picker";
 import { Button } from "@nextui-org/react";
 import { DEFAULT_TABLE_COLOR } from "../../common/constants";
 import { useTableGeneratorController } from "./useTableGeneratorController";
 import { TimeInput } from "../../common/components/time-input/time-input";
+import { ColorPicker } from "@renderer/common/components/color-picker/color-picker";
 
 export const TableGenerator = ({
 	tableKey,
@@ -114,7 +114,7 @@ export const TableGenerator = ({
 			</div>
 
 			{/*<Accordion defaultExpandedKeys="all" variant="bordered" selectionMode="multiple">*/}
-			{/*	<AccordionItem key="1" title="Columns" className="color-picker-field-container">*/}
+			{/*	<AccordionItem key="1" title="Columns" className="old-color-picker-field-container">*/}
 			<div style={{ border: "1px solid white", borderRadius: "10px", padding: "1rem" }}>
 				columns:
 				<div className="columns-container">
@@ -166,10 +166,10 @@ export const TableGenerator = ({
 										{colorPickerState[`columns.${columnIndex}.color`] && (
 											<ColorPicker
 												color={value}
-												onClose={(color) => {
-													onChange(color);
-													onColorPickerButtonClick(false, `columns.${columnIndex}.color`);
-												}}
+												onClose={() =>
+													onColorPickerButtonClick(false, `columns.${columnIndex}.color`)
+												}
+												onChange={onChange}
 											/>
 										)}
 									</div>
@@ -180,7 +180,7 @@ export const TableGenerator = ({
 				</div>
 			</div>
 			{/*</AccordionItem>*/}
-			{/*<AccordionItem key="2" title="Rows" className="color-picker-field-container">*/}
+			{/*<AccordionItem key="2" title="Rows" className="old-color-picker-field-container">*/}
 			<div style={{ border: "1px solid white", borderRadius: "10px", padding: "1rem" }}>
 				rows:
 				<div className="rows-container">
@@ -233,10 +233,8 @@ export const TableGenerator = ({
 										{colorPickerState[`rows.${rowIndex}.color`] && (
 											<ColorPicker
 												color={value}
-												onClose={(color) => {
-													onChange(color);
-													onColorPickerButtonClick(false, `rows.${rowIndex}.color`);
-												}}
+												onClose={() => onColorPickerButtonClick(false, `rows.${rowIndex}.color`)}
+												onChange={onChange}
 											/>
 										)}
 									</div>

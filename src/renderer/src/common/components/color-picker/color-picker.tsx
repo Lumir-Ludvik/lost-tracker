@@ -1,43 +1,25 @@
-import { ColorResult, SketchPicker, SketchPickerProps } from "react-color";
+import { HexColorPicker } from "react-colorful";
+import { useRef } from "react";
+import { DEFAULT_TABLE_COLOR } from "@renderer/common/constants";
+import useClickOutside from "@renderer/hooks/useClickOuside";
 import "./color-picker.scss";
-import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 
-export type ColorPickerProps = Omit<SketchPickerProps, "onChange" | "color"> & {
+type ColorPickerProps = {
+	onChange: (color: string) => void;
+	onClose: () => void;
 	color: string | undefined;
-	onClose: (color: string | undefined) => void;
 };
 
-export const ColorPicker = ({ color, onClose }: ColorPickerProps) => {
-	const [currentColor, setCurrentColor] = useState<string | undefined>(color);
-	const sketchRef = useRef(null);
+export const ColorPicker = ({ onChange, onClose, color }: ColorPickerProps) => {
+	const popover = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		setCurrentColor(color);
-	}, [color]);
-
-	useEffect(() => {
-		if (!sketchRef.current) {
-			return;
-		}
-
-		(sketchRef.current as HTMLElement)?.scrollIntoView({ behavior: "smooth" });
-	}, []);
-
-	const deferredValue = useDeferredValue(currentColor);
-
-	const handleChange = useCallback((color: ColorResult | undefined) => {
-		setCurrentColor(color?.hex);
-	}, []);
+	useClickOutside(popover, onClose);
 
 	return (
-		<div ref={sketchRef} className="color-picker-container">
-			<div
-				className="color-picker-close-div"
-				onClick={() => {
-					onClose(currentColor);
-				}}
-			/>
-			<SketchPicker color={deferredValue} onChange={(pickerColor) => handleChange(pickerColor)} />
+		<div className="picker">
+			<div className="popover" ref={popover}>
+				<HexColorPicker color={color ?? DEFAULT_TABLE_COLOR} onChange={onChange} />
+			</div>
 		</div>
 	);
 };

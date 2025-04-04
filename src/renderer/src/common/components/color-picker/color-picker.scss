@@ -1,18 +1,14 @@
-.color-picker-container {
-  position: absolute;
-  z-index: 100000;
-
-  .color-picker-close-div {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-
-	.sketch-picker {
-		// I hate this library...
-		background-color: #242424 !important;
-	}
+.picker {
+	position: relative;
 }
 
+.popover {
+	z-index: 15;
+	margin: 0.5rem;
+	position: absolute;
+	width: fit-content;
+	top: calc(100% + 2px);
+	left: 0;
+	border-radius: 8px;
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}

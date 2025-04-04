@@ -1,72 +1,87 @@
 .custom-table-container {
+	display: flex;
+	height: fit-content;
 
-  display: flex;
-  height: fit-content;
+	.custom-table tr:last-child td:first-child {
+		border-bottom-left-radius: 10px;
+	}
 
-  .custom-table {
+	.custom-table thead tr:first-child th:first-child {
+		border-top-left-radius: 10px;
+	}
 
-    margin: 1rem;
-    height: fit-content;
+	.custom-table thead tr:first-child th:last-child {
+		border-top-right-radius: 10px;
+	}
 
-		td,th {
-			border: 0.13rem solid black;
+	.custom-table tr:last-child td:last-child {
+		border-bottom-right-radius: 10px;
+	}
+
+	.custom-table {
+		margin: 1rem;
+		height: fit-content;
+
+		td,
+		th {
+			outline: 1px solid black;
 			color: hsl(0, 0%, calc((80 - 60) * -100%));
 		}
 
-    thead {
-      background-color: #8b0000ff;
+		thead {
+			background-color: #8b0000ff;
 
-      .name-cell {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+			.name-cell {
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
 
-        .name {
-          font-weight: bold;
-          font-size: larger;
+				.name {
+					font-weight: bold;
+					font-size: larger;
 					color: white;
-        }
+				}
 
-        .reset {
+				.reset {
 					display: flex;
 					flex-direction: column;
 					text-align: start;
-          font-size: small;
-          font-weight: lighter;
+					font-size: small;
+					font-weight: lighter;
 					color: white;
 
-          .reset-time {
-            font-weight: bold;
-            color: #09d909;
-          }
-        }
-      }
-    }
+					.reset-time {
+						font-weight: bold;
+						color: #09d909;
+					}
+				}
+			}
+		}
 
-    th,
-    td {
-      padding: 0.25rem;
-    }
+		th,
+		td {
+			padding: 0.25rem;
+		}
 
-    tbody {
-      td:first-child {
-        background-color: #8b0000ff;
-        text-align: start;
-      }
+		tbody {
+			td:first-child {
+				background-color: #8b0000ff;
+				text-align: start;
+			}
 
-      td {
-        text-align: center;
-      }
-    }
-  }
+			td {
+				text-align: center;
+			}
+		}
+	}
 
-  .actions {
-    margin: 1rem 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    justify-content: flex-start;
-  }
+	.actions {
+		margin: 1rem 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		justify-content: flex-start;
+	}
 
 	.checkbox {
 		span {
@@ -82,5 +97,3 @@
 		background-color: #0b98a8;
 	}
 }
-
-
