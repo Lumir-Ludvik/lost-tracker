@@ -1,9 +1,5 @@
 import { ControllerRenderProps, FieldError } from "react-hook-form";
-import {
-	Select as NextSelect,
-	SelectItem,
-	SelectProps as NextSelectProps
-} from "@heroui/react";
+import { Select as NextSelect, SelectItem, SelectProps as NextSelectProps } from "@heroui/react";
 
 export type SelectOptions = {
 	label: string;
@@ -21,7 +17,7 @@ export const Select = ({ field, error, options, ...props }: SelectProps) => {
 	return (
 		<NextSelect isInvalid={!!error?.message} errorMessage={error?.message} {...field} {...props}>
 			{options.map((option) => (
-				<SelectItem key={option.value} value={option.value}>
+				<SelectItem key={option.value} textValue={option.label}>
 					{option.label}
 				</SelectItem>
 			))}
