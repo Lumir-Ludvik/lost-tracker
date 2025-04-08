@@ -24,7 +24,6 @@
 .tab {
 	text-align: start;
 	justify-content: flex-start;
-	width: 93%;
 	flex: 1;
 
 	//hack inner tab content div
@@ -45,34 +44,11 @@
 			overflow: hidden;
 		}
 
-		.tab-actions {
-			top: -40px;
-			right: -35px;
-			position: absolute;
-			display: flex;
-			gap: 0.25rem;
-		}
-
-		.delete-tab,
-		.edit-tab {
-			display: none;
-			visibility: hidden;
-			opacity: 0;
-			transition:
-				visibility 0s,
-				opacity 0.5s linear;
-		}
-
-		&:hover {
-			.delete-tab,
-			.edit-tab {
-				display: flex;
-				visibility: visible;
-				opacity: 1;
-				transition:
-					visibility 0s,
-					opacity 0.5s linear;
-			}
+		.dropdown-button {
+			width: 10px;
+			height: 20px;
+			min-width: 30px;
+			border-radius: 6px;
 		}
 	}
 }

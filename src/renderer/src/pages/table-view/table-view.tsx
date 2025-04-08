@@ -1,14 +1,25 @@
 import "./table-view.scss";
 import { useFileDataContext } from "../../contexts/file-data-context";
 import { useDeferredValue, useMemo, useState } from "react";
-import { Button, Image, Input, Tab, Tabs, Tooltip, useDisclosure } from "@heroui/react";
-import editIcon from "../../assets/icons/edit.svg";
-import deleteIcon from "../../assets/icons/delete.svg";
+import {
+	Button,
+	Dropdown,
+	DropdownItem,
+	DropdownMenu,
+	DropdownTrigger,
+	Image,
+	Input,
+	Tab,
+	Tabs,
+	Tooltip,
+	useDisclosure
+} from "@heroui/react";
 import { ConfirmModal } from "../../common/components/confirm-modal/confirm-modal";
 import { ConfirmModalType, TabType } from "../../common/types";
 import { EditTabModal } from "../tab-generator/edit-tab-modal/edit-tab-modal";
 import { GameCard } from "@renderer/pages/table-view/game-card/game-card";
 import { EmptyTab } from "@renderer/pages/table-view/empty-tab/empty-tab";
+import dotsIcon from "../../assets/icons/dots.svg";
 
 type TabDeleteConfirmModalData = {
 	tabKey: string;
@@ -79,38 +90,43 @@ export const TableView = () => {
 										<p className="tab-title-text">{tab.tabName}</p>
 									</Tooltip>
 
-									<div className="tab-actions">
-										<Button className="delete-tab" color="primary" isIconOnly fullWidth={false}>
-											<Image
-												src={deleteIcon}
-												isZoomed
-												alt="delete"
-												width="24"
-												onClick={() =>
+									<Dropdown backdrop="blur">
+										<DropdownTrigger>
+											<Button className="dropdown-button" variant="flat" isIconOnly color="primary">
+												<Image src={dotsIcon} isZoomed alt="edit" width="15" />
+											</Button>
+										</DropdownTrigger>
+
+										<DropdownMenu aria-label="Static Actions" variant="faded">
+											<DropdownItem
+												key="edit"
+												onPress={() => {
+													setEditModalState({
+														tabName: tab.tabName,
+														tabKey: tab.tabKey
+													});
+													onEditTabOpen();
+												}}
+											>
+												Edit tab
+											</DropdownItem>
+
+											<DropdownItem
+												key="delete"
+												className="text-danger"
+												color="danger"
+												onPress={() => {
 													setConfirmModalState((value) => ({
 														...value,
 														isOpen: true,
 														data: { tabKey: tab.tabKey }
-													}))
-												}
-											/>
-										</Button>
-
-										<Button
-											className="edit-tab"
-											color="secondary"
-											isIconOnly
-											onPress={() => {
-												setEditModalState({
-													tabName: tab.tabName,
-													tabKey: tab.tabKey
-												});
-												onEditTabOpen();
-											}}
-										>
-											<Image src={editIcon} isZoomed alt="edit" width="24" />
-										</Button>
-									</div>
+													}));
+												}}
+											>
+												Delete Tab
+											</DropdownItem>
+										</DropdownMenu>
+									</Dropdown>
 								</div>
 							}
 						>

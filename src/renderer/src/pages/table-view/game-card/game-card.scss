@@ -2,6 +2,8 @@
 	margin: 1rem;
 	flex: 1;
 	height: 100%;
+	position: static;
+	z-index: 1;
 
 	.card-body {
 		flex: 1;

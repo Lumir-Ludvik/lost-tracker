@@ -19,6 +19,7 @@ import { uuidv4 } from "../common/utils";
 import { clearTimeout } from "timers";
 import { useLocation } from "react-router";
 import { TabForm } from "../pages/table-generator/types";
+import { jsonrepair } from "jsonrepair";
 
 type TableContextType = {
 	saveTab: (data: TabForm, tabKey?: string) => Promise<void>;
@@ -60,7 +61,7 @@ export const FileDataContextProvider = ({ children }: PropsWithChildren) => {
 			return null;
 		}
 
-		return JSON.parse(data);
+		return JSON.parse(jsonrepair(data));
 	}, [readFileAsync]);
 
 	// private:
@@ -81,7 +82,7 @@ export const FileDataContextProvider = ({ children }: PropsWithChildren) => {
 
 	const updateState = useCallback(
 		async (nextState: FileStructureType) => {
-			const res = await writeToFileAsync(JSON.stringify(nextState));
+			const res = await writeToFileAsync(jsonrepair(JSON.stringify(nextState)));
 
 			if (res) {
 				setLocalFileData(nextState);
