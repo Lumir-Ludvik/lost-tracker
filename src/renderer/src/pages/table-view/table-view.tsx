@@ -80,7 +80,7 @@ export const TableView = () => {
 									</Tooltip>
 
 									<div className="tab-actions">
-										<Button className="delete-tab" color="default" isIconOnly fullWidth={false}>
+										<Button className="delete-tab" color="primary" isIconOnly fullWidth={false}>
 											<Image
 												src={deleteIcon}
 												isZoomed
@@ -98,7 +98,7 @@ export const TableView = () => {
 
 										<Button
 											className="edit-tab"
-											color="default"
+											color="secondary"
 											isIconOnly
 											onPress={() => {
 												setEditModalState({

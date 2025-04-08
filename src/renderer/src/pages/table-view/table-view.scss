@@ -11,33 +11,51 @@
 }
 
 .tabs {
-	margin: 1rem;
+	position: relative;
+	overflow: visible;
+	margin: 1rem 0 0 1rem;
 	height: 86vh;
+
+	& > div {
+		overflow: visible;
+	}
 }
 
 .tab {
+	text-align: start;
+	justify-content: flex-start;
 	width: 93%;
 	flex: 1;
 
+	//hack inner tab content div
+	& > div {
+		flex: 1;
+	}
+
 	.tab-title {
+		justify-content: space-between;
+		display: flex;
+		align-items: center;
+
 		.tab-title-text {
+			text-align: start;
 			max-width: 6rem;
 			white-space: nowrap;
 			text-overflow: ellipsis;
 			overflow: hidden;
 		}
 
-		display: flex;
-		align-items: center;
-
 		.tab-actions {
-			margin-left: 1rem;
+			top: -40px;
+			right: -35px;
+			position: absolute;
 			display: flex;
 			gap: 0.25rem;
 		}
 
 		.delete-tab,
 		.edit-tab {
+			display: none;
 			visibility: hidden;
 			opacity: 0;
 			transition:
@@ -48,6 +66,7 @@
 		&:hover {
 			.delete-tab,
 			.edit-tab {
+				display: flex;
 				visibility: visible;
 				opacity: 1;
 				transition:
