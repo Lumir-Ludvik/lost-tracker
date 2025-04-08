@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import "./header.scss";
-import { Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@nextui-org/react";
+import { Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@heroui/react";
 
 export const Header = () => {
 	return (

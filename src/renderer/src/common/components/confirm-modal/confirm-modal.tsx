@@ -1,11 +1,4 @@
-import {
-	Button,
-	Modal,
-	ModalBody,
-	ModalContent,
-	ModalFooter,
-	ModalHeader
-} from "@nextui-org/react";
+import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react";
 
 type ConfirmModalProps = {
 	isOpen: boolean;
@@ -29,10 +22,10 @@ export const ConfirmModal = ({
 				<ModalHeader>{title}</ModalHeader>
 				<ModalBody>{text}</ModalBody>
 				<ModalFooter>
-					<Button color="success" onClick={onAccept}>
+					<Button color="success" onPress={onAccept}>
 						Accept
 					</Button>
-					<Button color="danger" onClick={onDecline}>
+					<Button color="danger" onPress={onDecline}>
 						Decline
 					</Button>
 				</ModalFooter>

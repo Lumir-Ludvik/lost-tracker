@@ -1,7 +1,7 @@
 import "./table-view.scss";
 import { useFileDataContext } from "../../contexts/file-data-context";
 import { useDeferredValue, useMemo, useState } from "react";
-import { Button, Image, Input, Tab, Tabs, Tooltip, useDisclosure } from "@nextui-org/react";
+import { Button, Image, Input, Tab, Tabs, Tooltip, useDisclosure } from "@heroui/react";
 import editIcon from "../../assets/icons/edit.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
 import { ConfirmModal } from "../../common/components/confirm-modal/confirm-modal";
@@ -100,7 +100,7 @@ export const TableView = () => {
 											className="edit-tab"
 											color="default"
 											isIconOnly
-											onClick={() => {
+											onPress={() => {
 												setEditModalState({
 													tabName: tab.tabName,
 													tabKey: tab.tabKey

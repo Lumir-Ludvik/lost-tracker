@@ -3,7 +3,7 @@ import {
 	Select as NextSelect,
 	SelectItem,
 	SelectProps as NextSelectProps
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 export type SelectOptions = {
 	label: string;

@@ -4,7 +4,7 @@ import "./table-generator.scss";
 import { TableGeneratorProps } from "./types";
 import { Input } from "../../common/components/input/input";
 import { Select } from "../../common/components/select/select";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { DEFAULT_TABLE_COLOR } from "../../common/constants";
 import { useTableGeneratorController } from "./useTableGeneratorController";
 import { TimeInput } from "../../common/components/time-input/time-input";
@@ -267,7 +267,7 @@ export const TableGenerator = ({
 					<Button color="primary" type="submit">
 						{isEdit ? "Save" : "Create"} table
 					</Button>
-					<Button color="secondary" type="button" onClick={() => reset()}>
+					<Button color="secondary" type="button" onPress={() => reset()}>
 						Reset form
 					</Button>
 				</div>

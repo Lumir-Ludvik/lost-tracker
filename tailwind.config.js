@@ -1,15 +1,15 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires,no-undef
-const {nextui} = require("@nextui-org/react");
+const {heroui} = require("@heroui/react");
 
 /** @type {import('tailwindcss').Config} */
 // eslint-disable-next-line no-undef
 module.exports = {
-  content: ["./src/**/*.{html,js}",  "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"],
+  content: ["./src/**/*.{html,js}",  "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {},
   },
 	darkMode: "class",
-  plugins: [nextui()],
+  plugins: [heroui()],
 	mode: 'jit',
 	module: {
 		rules: [

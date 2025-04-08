@@ -1,4 +1,4 @@
-import { Button, Card, CardBody } from "@nextui-org/react";
+import { Button, Card, CardBody } from "@heroui/react";
 import { Table } from "@renderer/common/components/table/table";
 import { Link } from "react-router-dom";
 import { TabType } from "@renderer/common/types";
@@ -23,7 +23,7 @@ export const GameCard = ({ tab }: GameCardProps) => {
 				</Link>
 				<p className="delete-tab-text">
 					Or delete this Game tab:
-					<Button color="danger" onClick={() => deleteTab(tab.tabKey)}>
+					<Button color="danger" onPress={() => deleteTab(tab.tabKey)}>
 						Delete
 					</Button>
 				</p>

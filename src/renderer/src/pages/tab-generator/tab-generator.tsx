@@ -1,7 +1,7 @@
 import { Controller } from "react-hook-form";
 import { Input } from "../../common/components/input/input";
 import { useTabGeneratorController } from "./useTabGeneratorController";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import "./tab-generator.scss";
 import { TabType } from "../../common/types";
 
@@ -51,7 +51,7 @@ export const TabGenerator = ({
 					<Button color="primary" type="submit">
 						{isEdit ? "Edit" : "Create"} Game
 					</Button>
-					<Button color="secondary" type="button" onClick={() => reset()}>
+					<Button color="secondary" type="button" onPress={() => reset()}>
 						Reset form
 					</Button>
 				</div>

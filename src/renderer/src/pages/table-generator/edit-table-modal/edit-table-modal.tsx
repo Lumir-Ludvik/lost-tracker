@@ -1,11 +1,4 @@
-import {
-	Button,
-	Modal,
-	ModalBody,
-	ModalContent,
-	ModalFooter,
-	ModalHeader
-} from "@nextui-org/react";
+import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react";
 import { TableGenerator } from "../table-generator";
 import { TableDataType } from "../../../common/types";
 import "./edit-table-modal.scss";
@@ -56,10 +49,10 @@ export const EditTableModal = ({
 					/>
 				</ModalBody>
 				<ModalFooter>
-					<Button color="primary" onClick={() => setTriggerSubmit(true)}>
+					<Button color="primary" onPress={() => setTriggerSubmit(true)}>
 						Save
 					</Button>
-					<Button color="secondary" onClick={() => setTriggerReset(true)}>
+					<Button color="secondary" onPress={() => setTriggerReset(true)}>
 						Reset
 					</Button>
 				</ModalFooter>

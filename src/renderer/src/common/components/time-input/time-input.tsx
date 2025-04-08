@@ -2,7 +2,7 @@ import { ControllerRenderProps, FieldError } from "react-hook-form";
 import {
 	TimeInput as NextTimeInput,
 	TimeInputProps as NextTimeInputProps
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 type TimeInputProps = NextTimeInputProps & {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,5 +1,5 @@
 import { ControllerRenderProps, FieldError } from "react-hook-form";
-import { Input as NextInput, InputProps as NextInputProps } from "@nextui-org/react";
+import { Input as NextInput, InputProps as NextInputProps } from "@heroui/react";
 import "./input.scss";
 
 export type InputProps = NextInputProps & {

@@ -1,7 +1,7 @@
 import { memo, useMemo, useState } from "react";
 import { ConfirmModalType, Days, TableDataType } from "../../types";
 import "./table.scss";
-import { Button, Checkbox, Image, useDisclosure } from "@nextui-org/react";
+import { Button, Checkbox, Image, useDisclosure } from "@heroui/react";
 import { useFileDataContext } from "../../../contexts/file-data-context";
 import deleteIcon from "../../../assets/icons/delete.svg";
 import editIcon from "../../../assets/icons/edit.svg";
@@ -113,17 +113,17 @@ export const Table = memo(({ tableKey, tabKey, data }: TableProps) => {
 						color="default"
 						isIconOnly
 						fullWidth={false}
-						onClick={() => setConfirmModalState({ action: "delete", isOpen: true })}
+						onPress={() => setConfirmModalState({ action: "delete", isOpen: true })}
 					>
 						<Image src={deleteIcon} isZoomed alt="delete" width="24" />
 					</Button>
-					<Button color="default" isIconOnly onClick={onOpen}>
+					<Button color="default" isIconOnly onPress={onOpen}>
 						<Image src={editIcon} isZoomed alt="edit" width="24" />
 					</Button>
 					<Button
 						color="default"
 						isIconOnly
-						onClick={() => setConfirmModalState({ action: "reset", isOpen: true })}
+						onPress={() => setConfirmModalState({ action: "reset", isOpen: true })}
 					>
 						<Image src={resetIcon} isZoomed alt="reset" width="24" />
 					</Button>
