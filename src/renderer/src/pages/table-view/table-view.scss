@@ -32,6 +32,9 @@
 	}
 
 	.tab-title {
+		min-width: 6rem;
+		height: 30px;
+		gap: 0.5rem;
 		justify-content: space-between;
 		display: flex;
 		align-items: center;
