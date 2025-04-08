@@ -10,32 +10,9 @@
 	}
 }
 
-.table-view {
-	display: flex;
-	flex-wrap: wrap;
-	height: 100%;
-}
-
-.no-tabs,
-.no-tables {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	flex: 1;
-	height: 100%;
-}
-
 .tabs {
 	margin: 1rem;
 	height: 86vh;
-}
-
-.delete-tab-text {
-	margin-top: 0.5rem;
-	display: flex;
-	gap: 1rem;
-	align-items: center;
 }
 
 .tab {
@@ -78,15 +55,5 @@
 					opacity 0.5s linear;
 			}
 		}
-	}
-}
-
-.card {
-	margin: 1rem;
-	flex: 1;
-	height: 100%;
-
-	.card-body {
-		flex: 1;
 	}
 }

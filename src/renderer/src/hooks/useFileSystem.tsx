@@ -9,6 +9,7 @@ const exists = require("fs").existsSync;
 export const useFileSystem = () => {
 	const writeToFileAsync = useCallback(
 		async (data: string, path: string = DEFAULT_FILE_PATH): Promise<boolean> => {
+			console.log("write");
 			try {
 				if (!exists(DIRECTORY_PATH)) {
 					await fs.mkdir(DIRECTORY_PATH);
@@ -27,6 +28,7 @@ export const useFileSystem = () => {
 
 	const readFileAsync = useCallback(
 		async (path: string = DEFAULT_FILE_PATH): Promise<string | false> => {
+			console.log("read");
 			try {
 				return (await fs.readFile(path)).toString();
 			} catch (err) {

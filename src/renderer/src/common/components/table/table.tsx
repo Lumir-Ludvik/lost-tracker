@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { ConfirmModalType, Days, TableDataType } from "../../types";
 import "./table.scss";
 import { Button, Checkbox, Image, useDisclosure } from "@nextui-org/react";
@@ -16,7 +16,7 @@ type TableProps = {
 	tabKey: string;
 };
 
-export const Table = ({ tableKey, tabKey, data }: TableProps) => {
+export const Table = memo(({ tableKey, tabKey, data }: TableProps) => {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const { handleCheckBoxChange, resetTable, deleteTable } = useFileDataContext();
 
@@ -88,7 +88,7 @@ export const Table = ({ tableKey, tabKey, data }: TableProps) => {
 									<span className="name">{data.tableName}</span>
 									<div className="reset">
 										<span>
-											Resets on:{" "}
+											Resets on:
 											<span className="reset-time">
 												{isNaN(Number(data.dayOfReset)) ? data.dayOfReset : Days[data.dayOfReset]}
 											</span>
@@ -146,11 +146,11 @@ export const Table = ({ tableKey, tabKey, data }: TableProps) => {
 				onAccept={() => {
 					confirmModalState.action === "delete"
 						? deleteTable(tabKey, tableKey)
-						: resetTable( tableKey,tabKey);
+						: resetTable(tableKey, tabKey);
 					setConfirmModalState({ action: "none", isOpen: false });
 				}}
 				onDecline={() => setConfirmModalState((value) => ({ ...value, isOpen: false }))}
 			/>
 		</>
 	);
-};
+});

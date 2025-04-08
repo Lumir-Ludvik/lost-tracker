@@ -1,25 +1,14 @@
 import "./table-view.scss";
 import { useFileDataContext } from "../../contexts/file-data-context";
-import { Table } from "../../common/components/table/table";
-import { useEffect, useMemo, useState } from "react";
-import {
-	Button,
-	Card,
-	CardBody,
-	Image,
-	Input,
-	Tab,
-	Tabs,
-	Tooltip,
-	useDisclosure
-} from "@nextui-org/react";
-import { Link } from "react-router-dom";
+import { useDeferredValue, useMemo, useState } from "react";
+import { Button, Image, Input, Tab, Tabs, Tooltip, useDisclosure } from "@nextui-org/react";
 import editIcon from "../../assets/icons/edit.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
 import { ConfirmModal } from "../../common/components/confirm-modal/confirm-modal";
 import { ConfirmModalType, TabType } from "../../common/types";
 import { EditTabModal } from "../tab-generator/edit-tab-modal/edit-tab-modal";
-import { clearTimeout } from "timers";
+import { GameCard } from "@renderer/pages/table-view/game-card/game-card";
+import { EmptyTab } from "@renderer/pages/table-view/empty-tab/empty-tab";
 
 type TabDeleteConfirmModalData = {
 	tabKey: string;
@@ -35,7 +24,7 @@ export const TableView = () => {
 	} = useDisclosure();
 
 	const [searchInput, setSearchInput] = useState("");
-	const [debouncedSearchInput, setDebouncedSearchInput] = useState("");
+	const deferredSearch = useDeferredValue(searchInput);
 	const [editModalState, setEditModalState] = useState<TabType | null>(null);
 	const [confirmModalState, setConfirmModalState] = useState<
 		ConfirmModalType<TabDeleteConfirmModalData>
@@ -43,17 +32,6 @@ export const TableView = () => {
 		isOpen: false,
 		action: "none"
 	});
-
-	useEffect(
-		function debounceSearch() {
-			const debounce = setTimeout(() => {
-				setDebouncedSearchInput(searchInput.trim());
-			}, 300);
-
-			return () => clearTimeout(debounce);
-		},
-		[searchInput]
-	);
 
 	const tabs = useMemo(() => {
 		if (!fileData) {
@@ -66,22 +44,29 @@ export const TableView = () => {
 				tabKey: key
 			}))
 			.filter((tab) => {
-				if (debouncedSearchInput === "") {
+				if (deferredSearch === "") {
 					return true;
 				}
 
-				return tab.tabName.includes(debouncedSearchInput);
+				return tab.tabName.includes(deferredSearch);
 			});
-	}, [debouncedSearchInput, fileData]);
+	}, [deferredSearch, fileData]);
 
-	return (
-		<div className="table-view-container">
+	const searchInputJsx = useMemo(() => {
+		return (
 			<Input
 				className="search-input"
 				label="Search games"
 				value={searchInput}
 				onChange={(event) => setSearchInput(event.target.value)}
 			/>
+		);
+	}, [searchInput]);
+
+	return (
+		<div className="table-view-container">
+			{searchInputJsx}
+
 			{tabs.length > 0 && (
 				<Tabs className="tabs" placement="start">
 					{tabs.map((tab) => (
@@ -93,6 +78,7 @@ export const TableView = () => {
 									<Tooltip color="primary" placement="bottom" content={tab.tabName}>
 										<p className="tab-title-text">{tab.tabName}</p>
 									</Tooltip>
+
 									<div className="tab-actions">
 										<Button className="delete-tab" color="default" isIconOnly fullWidth={false}>
 											<Image
@@ -109,6 +95,7 @@ export const TableView = () => {
 												}
 											/>
 										</Button>
+
 										<Button
 											className="edit-tab"
 											color="default"
@@ -127,54 +114,13 @@ export const TableView = () => {
 								</div>
 							}
 						>
-							<Card className="card">
-								<CardBody className="card-body">
-									<div className="table-view">
-										{fileData &&
-											Object.keys(fileData[tab.tabKey].tables ?? {}).map((tableKey) => (
-												<>
-													{fileData[tab.tabKey].tables?.[tableKey] != null && (
-														<Table
-															key={tableKey}
-															tabKey={tab.tabKey}
-															tableKey={tableKey}
-															data={fileData[tab.tabKey].tables![tableKey]}
-														/>
-													)}
-												</>
-											))}
-
-										{Object.keys(fileData?.[tab.tabKey].tables ?? {}).length === 0 && (
-											<div className="no-tables">
-												<h1>No tables found! 😱</h1>
-												<h2>Go ahead and create some 😈</h2>
-												<Link to="./table-generator" className="link">
-													Go to table generator
-												</Link>
-												<p className="delete-tab-text">
-													Or delete this Game tab:
-													<Button color="danger" onClick={() => deleteTab(tab.tabKey)}>
-														Delete
-													</Button>
-												</p>
-											</div>
-										)}
-									</div>
-								</CardBody>
-							</Card>
+							<GameCard tab={tab} />
 						</Tab>
 					))}
 				</Tabs>
 			)}
 
-			{tabs.length === 0 && (
-				<div className="no-tabs">
-					<h1>No games found! 😥 Try changing your search criteria or create some!</h1>
-					<Link to="./tab-generator" className="link">
-						Go to Game generator
-					</Link>
-				</div>
-			)}
+			{tabs.length === 0 && <EmptyTab />}
 
 			<ConfirmModal
 				isOpen={confirmModalState.isOpen}

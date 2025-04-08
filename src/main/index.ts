@@ -2,6 +2,9 @@ import { app, BrowserWindow, ipcMain, shell } from "electron";
 import { join } from "path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
+import installExtension, { REACT_DEVELOPER_TOOLS } from "electron-devtools-installer";
+
+// Import React DevTools core
 
 function createWindow(): void {
 	// Create the browser window.
@@ -42,6 +45,16 @@ function createWindow(): void {
 	// Load the remote URL for development or the local html file for production.
 	if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
 		mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
+		// Enable React DevTools in the Electron window
+		installExtension(REACT_DEVELOPER_TOOLS)
+			.then((name) => {
+				console.log(`Added Extension: ${name}`);
+			})
+			.catch((err) => {
+				console.log("An error occurred: ", err);
+			});
+
+		mainWindow.webContents.openDevTools(); // Optionally, open dev tools automatically
 	} else {
 		mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
 	}
